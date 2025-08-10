@@ -1,0 +1,1255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lakshmi Narayanan Portfolio</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Courier new', sans-serif;
+            overflow-x: hidden;
+            background: #000;
+        }
+
+        /* Header */
+        .header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            z-index: 1000;
+            padding: 20px 40px;
+            background: rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+        }
+
+        .header.scrolled {
+            background: rgba(0, 0, 0, 0.8);
+            padding: 15px 40px;
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .logo-section {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .changing-text {
+            font-size: 1.2rem;
+            font-weight: 300;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            color: #4ecdc4;
+            text-shadow: 1px 1px 10px rgba(0, 0, 0, 0.5);
+            height: 30px;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+        }
+
+        .text-slide {
+            display: inline-block;
+            line-height: 30px;
+            transition: opacity 0.3s ease, transform 0.3s ease;
+        }
+
+        .logo {
+            font-size: 1.8rem;
+            font-weight: 300;
+            color: white;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        .logo a {
+            color: white;
+            text-decoration: none;
+        }
+
+        .nav-menu {
+            display: flex;
+            list-style: none;
+            gap: 40px;
+        }
+
+        .nav-item {
+            position: relative;
+        }
+
+        .nav-link {
+            color: white;
+            text-decoration: none;
+            font-size: 1.1rem;
+            font-weight: 300;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            transition: all 0.3s ease;
+            padding: 10px 0;
+            position: relative;
+            cursor: pointer;
+        }
+
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: linear-gradient(90deg, #ff6b6b, #4ecdc4);
+            transition: width 0.3s ease;
+        }
+
+        .nav-link:hover::after {
+            width: 100%;
+        }
+
+        .nav-link:hover {
+            color: #4ecdc4;
+            transform: translateY(-2px);
+        }
+
+        /* Main Content */
+        .main-container {
+            position: relative;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .slideshow-container {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 800px;
+            height: 450px;
+            z-index: 2;
+        }
+
+        .slide-wrapper {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            transition: opacity 2s ease-in-out;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 30px 80px rgba(0, 0, 0, 0.6);
+        }
+
+        .slide-wrapper.active {
+            opacity: 1;
+        }
+
+        .slide-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: all 0.3s ease;
+        }
+
+        .slide-image:hover {
+            transform: scale(1.05);
+        }
+
+        .project-description {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(transparent, rgba(0, 0, 0, 0.9));
+            padding: 40px 30px 25px;
+            color: white;
+            transform: translateY(20px);
+            opacity: 0;
+            animation: slideInDescription 1s ease-out 0.5s forwards;
+        }
+
+        .project-title {
+            font-size: 1.6rem;
+            font-weight: 1000;
+            margin-bottom: 8px;
+            color: #ff6b6b;
+            letter-spacing: 1px;
+        }
+
+        .project-details {
+            font-size: 1rem;
+            line-height: 1.5;
+            margin-bottom: 10px;
+            opacity: 0.95;
+        }
+
+        .project-meta {
+            font-size: 0.85rem;
+            opacity: 0.8;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        @keyframes slideInDescription {
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(
+                135deg,
+                rgba(0, 0, 0, 0.4) 0%,
+                rgba(0, 0, 0, 0.2) 50%,
+                rgba(0, 0, 0, 0.4) 100%
+            );
+            z-index: 2;
+        }
+
+        .slide-indicators {
+            position: absolute;
+            bottom: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 4;
+            display: flex;
+            gap: 15px;
+        }
+
+        .indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.4);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid rgba(255, 255, 255, 0.6);
+        }
+
+        .indicator.active {
+            background: rgba(255, 255, 255, 0.9);
+            transform: scale(1.2);
+        }
+
+        .indicator:hover {
+            background: rgba(255, 255, 255, 0.7);
+        }
+
+        .scroll-indicator {
+            position: absolute;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 3;
+            color: white;
+            opacity: 0.7;
+            animation: bounce 2s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% {
+                transform: translateX(-50%) translateY(0);
+            }
+            40% {
+                transform: translateX(-50%) translateY(-10px);
+            }
+            60% {
+                transform: translateX(-50%) translateY(-5px);
+            }
+        }
+
+        /* Skills Graph Section */
+        .skills-section {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #000000 0%, #1a1a1a 50%, #000000 100%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 100px 20px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .skills-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background:
+                radial-gradient(circle at 20% 80%, rgba(78, 205, 196, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(255, 107, 107, 0.1) 0%, transparent 50%);
+            pointer-events: none;
+        }
+
+        .skills-title {
+            font-size: 3rem;
+            font-weight: 300;
+            color: white;
+            text-align: center;
+            margin-bottom: 20px;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            opacity: 0;
+            transform: translateY(30px);
+            animation: fadeInUp 1s ease-out forwards;
+        }
+
+        .skills-subtitle {
+            font-size: 1.2rem;
+            color: #4ecdc4;
+            text-align: center;
+            margin-bottom: 60px;
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeInUp 1s ease-out 0.3s forwards;
+        }
+
+        .graph-container {
+            width: 100%;
+            max-width: 1200px;
+            height: 600px;
+            position: relative;
+            opacity: 0;
+            transform: scale(0.9);
+            animation: scaleIn 1s ease-out 0.6s forwards;
+        }
+
+        #skills-graph {
+            width: 100%;
+            height: 100%;
+            border-radius: 20px;
+            background: rgba(255, 255, 255, 0.02);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .graph-legend {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 20px;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+            font-size: 0.9rem;
+            color: white;
+        }
+
+        .legend-color {
+            width: 15px;
+            height: 15px;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+
+        /* About Section */
+        .about-section {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #1a1a1a 0%, #000000 50%, #1a1a1a 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 100px 20px;
+            position: relative;
+        }
+
+        .about-container {
+            max-width: 1200px;
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 80px;
+            align-items: center;
+        }
+
+        .about-image {
+            position: relative;
+        }
+
+        .portrait {
+            width: 350px;
+            height: 450px;
+            border-radius: 20px;
+            object-fit: cover;
+            box-shadow: 0 30px 80px rgba(0, 0, 0, 0.6);
+            transition: all 0.3s ease;
+        }
+
+        .portrait:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 40px 100px rgba(0, 0, 0, 0.8);
+        }
+
+        .about-content {
+            color: white;
+        }
+
+        .about-title {
+            font-size: 3rem;
+            font-weight: 300;
+            margin-bottom: 30px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            background: linear-gradient(135deg, #ff6b6b, #4ecdc4);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .about-description {
+            font-size: 1.2rem;
+            line-height: 1.8;
+            margin-bottom: 40px;
+            opacity: 0.9;
+        }
+
+        .about-stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+
+        .stat-item {
+            text-align: center;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .stat-item:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateY(-5px);
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #4ecdc4;
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            opacity: 0.8;
+        }
+
+        /* Contact Section */
+        .contact-section {
+            min-height: 50vh;
+            background: linear-gradient(135deg, #000000 0%, #2d2d2d 100%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 80px 20px;
+            position: relative;
+        }
+
+        .contact-title {
+            font-size: 2.5rem;
+            font-weight: 300;
+            color: white;
+            text-align: center;
+            margin-bottom: 50px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        .contact-links {
+            display: flex;
+            gap: 50px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .contact-link {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-decoration: none;
+            color: white;
+            transition: all 0.3s ease;
+            padding: 30px;
+            border-radius: 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            min-width: 200px;
+        }
+
+        .contact-link:hover {
+            transform: translateY(-10px);
+            background: rgba(255, 255, 255, 0.1);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+        }
+
+        .contact-icon {
+            width: 50px;
+            height: 50px;
+            margin-bottom: 15px;
+            fill: #4ecdc4;
+            transition: all 0.3s ease;
+        }
+
+        .contact-link:hover .contact-icon {
+            fill: #ff6b6b;
+            transform: scale(1.2);
+        }
+
+        .contact-label {
+            font-size: 1.1rem;
+            font-weight: 300;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 5px;
+        }
+
+        .contact-info {
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+
+        /* Mobile Menu */
+        .mobile-menu-btn {
+            display: none;
+            flex-direction: column;
+            cursor: pointer;
+            gap: 4px;
+        }
+
+        .mobile-menu-btn span {
+            width: 25px;
+            height: 2px;
+            background: white;
+            transition: all 0.3s ease;
+        }
+
+        /* Animations */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes scaleIn {
+            from {
+                opacity: 0;
+                transform: scale(0.9);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .header {
+                padding: 15px 20px;
+            }
+
+            .logo-section {
+                flex-direction: column;
+                gap: 5px;
+                align-items: flex-start;
+            }
+
+            .changing-text {
+                font-size: 1rem;
+                height: 25px;
+            }
+
+            .text-slide {
+                line-height: 25px;
+            }
+
+            .logo {
+                font-size: 1.4rem;
+            }
+
+            .nav-menu {
+                display: none;
+                position: absolute;
+                top: 100%;
+                left: 0;
+                width: 100%;
+                background: rgba(0, 0, 0, 0.9);
+                flex-direction: column;
+                padding: 20px;
+                gap: 20px;
+            }
+
+            .nav-menu.active {
+                display: flex;
+            }
+
+            .mobile-menu-btn {
+                display: flex;
+            }
+
+            .slideshow-container {
+                width: 90%;
+                height: 320px;
+                margin-top: 50px;
+            }
+
+            .skills-title {
+                font-size: 2rem;
+            }
+
+            .graph-container {
+                height: 400px;
+            }
+
+            .graph-legend {
+                position: relative;
+                top: auto;
+                right: auto;
+                margin-top: 20px;
+            }
+
+            .about-container {
+                grid-template-columns: 1fr;
+                gap: 40px;
+                text-align: center;
+            }
+
+            .portrait {
+                width: 280px;
+                height: 360px;
+            }
+
+            .about-title {
+                font-size: 2rem;
+            }
+
+            .about-stats {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+
+            .contact-links {
+                gap: 30px;
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .contact-link {
+                min-width: 250px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .logo {
+                font-size: 1.2rem;
+            }
+
+            .changing-text {
+                font-size: 0.9rem;
+                height: 22px;
+            }
+
+            .text-slide {
+                line-height: 22px;
+            }
+
+            .slideshow-container {
+                width: 95%;
+                height: 280px;
+            }
+
+            .skills-title {
+                font-size: 1.8rem;
+            }
+
+            .about-title {
+                font-size: 1.8rem;
+            }
+
+            .portrait {
+                width: 250px;
+                height: 320px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="header" id="header">
+        <div class="header-content">
+            <div class="logo-section">
+                <div class="logo"><a href="portfolio_landing.html" class="nav-link">LAKSHMI NARAYANAN</a></div>
+                <div class="changing-text">
+                    <div class="text-slide">ARCHITECT</div>
+                </div>
+            </div>
+            <nav>
+                <ul class="nav-menu" id="navMenu">
+                    <li class="nav-item"><a href="architecture.html" class="nav-link">Architecture</a></li>
+                    <li class="nav-item"><a href="urbanism.html" class="nav-link">Urbanism</a></li>
+                </ul>
+                <div class="mobile-menu-btn" id="mobileMenuBtn">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
+            </nav>
+        </div>
+    </header>
+
+    <main class="main-container" id="home">
+        <div class="slideshow-container">
+            <!-- Slide 1 -->
+            <div class="slide-wrapper active">
+                <img src="back.jpg"
+                     alt="AI and Participatory design"
+                     class="slide-image">
+                <div class="project-description">
+                    <div class="project-title">AI and Participatory design</div>
+                    <div class="project-details">Using computer vision to understand neighbourhood and conducting a participatory design exercise using N8N, Comfyui and RAG/AI agents.</div>
+                    <div class="project-meta">2025 • Barcelona, Spain</div>
+                </div>
+            </div>
+
+            <!-- Slide 2 -->
+            <div class="slide-wrapper">
+                <img src="1-01.jpg"
+                     alt="Heat Archipelagos"
+                     class="slide-image">
+                <div class="project-description">
+                    <div class="project-title">Heat Archipelagos</div>
+                    <div class="project-details">Developing a heat index by clustering cities based on shapes and patterns of heat distribution by compiling GEE datasets and machine learning.</div>
+                    <div class="project-meta">2024 • Earth</div>
+                </div>
+            </div>
+
+            <!-- Slide 3 -->
+            <div class="slide-wrapper">
+                <img src="centralndama-ezgif.com-video-to-gif-converter.gif"
+                     alt="Rundu Mobility Justice"
+                     class="slide-image">
+                <div class="project-description">
+                    <div class="project-title">Rundu Mobility Justice framework</div>
+                    <div class="project-details">Creating a website for urban designers, planners, stake holders working on a project in Rundu, Namibia. This widely uses LLM. NLP's, pre-processed gdfs and a lot of java, python, grasshopper and Qgis.</div>
+                    <div class="project-meta">2025 • Rundu, Namibia</div>
+                </div>
+            </div>
+
+            <!-- Slide 4 -->
+            <div class="slide-wrapper">
+                <img src="Fire.png"
+                     alt="Wildfire Analysis"
+                     class="slide-image">
+                <div class="project-description">
+                    <div class="project-title">Wildfire</div>
+                    <div class="project-details">Publishing a GEE earth dataset after investigating wildfires in Los Angeles, I used computer vision models like Roboflow to detect fire areas and burnt houses, and I published a global dataset on Google Earth Engine to predict areas susceptible to wildfires</div>
+                    <div class="project-meta">2021 • Earth</div>
+                </div>
+            </div>
+
+            <!-- Slide 5 -->
+            <div class="slide-wrapper">
+                <img src="render.jpg"
+                     alt="GV1 Chemical Campus"
+                     class="slide-image">
+                <div class="project-description">
+                    <div class="project-title">GV1</div>
+                    <div class="project-details">A chemical campus (GV1) was constructed between metal fins, creating the impression that the building is held together by metal membranes. The atrium detailing was part of my design experiment, where I developed a continuous glass frame that transitions seamlessly from the façade to the roof structure.</div>
+                    <div class="project-meta">2022 • Hyderabad, India</div>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="overlay"></div>
+
+        <div class="slide-indicators">
+            <div class="indicator active" data-slide="0"></div>
+            <div class="indicator" data-slide="1"></div>
+            <div class="indicator" data-slide="2"></div>
+            <div class="indicator" data-slide="3"></div>
+            <div class="indicator" data-slide="4"></div>
+        </div>
+
+        <div class="scroll-indicator">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M7 13l3 3 7-7"></path>
+                <path d="M7 6l3 3 7-7"></path>
+            </svg>
+        </div>
+    </main>
+
+    <!-- Skills Section -->
+    <section class="skills-section" id="skills">
+        <h2 class="skills-title">Tools & Expertise</h2>
+        <div class="graph-container">
+            <svg id="skills-graph"></svg>
+            <div class="graph-legend">
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #ff6b6b;"></div>
+                    <span>Expert (80-100%)</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #4ecdc4;"></div>
+                    <span>Advanced (60-79%)</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #95e1d3;"></div>
+                    <span>Intermediate (40-59%)</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #fce38a;"></div>
+                    <span>Beginner (20-39%)</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- About Section -->
+    <section class="about-section" id="about">
+        <div class="about-container">
+            <div class="about-image">
+                <img src="Lakshmi Narayanan.jpg"
+                     alt="Lakshmi Narayanan Portrait"
+                     class="portrait">
+            </div>
+            <div class="about-content">
+                <h2 class="about-title">About Me</h2>
+                <p class="about-description">
+                    This is Lakshmi Narayanan V, Architect - Computational designer - AI artist and urban researcher with three years experience. My work lies on the intersection of Architectural design, Urban data and AI. I am currently in Barcelona, Spain completing my Master's in City and Technology from IAAC Barcelona, as I am gaining more experience with advanced architecture and urbanism.
+                </p>
+                <p class="about-description">
+                    My experience gives me strong skills in data driven design, algorithmic computation, different intersectionality and knowledge about project management, construction techniques with material sciences. Feel free to connect, I am always interested in collaborating over projects - profitable and non profitable. Hoping to connect with you...
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section class="contact-section" id="contact">
+        <h2 class="contact-title">Let's Connect</h2>
+        <div class="contact-links">
+            <a href="mailto:narayanan004avictor@gmail.com" class="contact-link">
+                <svg class="contact-icon" viewBox="0 0 24 24">
+                    <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+                    <polyline points="22,6 12,13 2,6"/>
+                </svg>
+                <span class="contact-label">Email</span>
+                <span class="contact-info">narayanan004avictor@gmail.com</span>
+            </a>
+
+            <a href="https://www.linkedin.com/in/lakshmi-narayanan-2b9b75177/" target="_blank" class="contact-link">
+                <svg class="contact-icon" viewBox="0 0 24 24">
+                    <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/>
+                    <rect x="2" y="9" width="4" height="12"/>
+                    <circle cx="4" cy="4" r="2"/>
+                </svg>
+                <span class="contact-label">LinkedIn</span>
+                <span class="contact-info">Connect with me</span>
+            </a>
+
+            <a href="https://github.com/Jokar-man" target="_blank" class="contact-link">
+                <svg class="contact-icon" viewBox="0 0 24 24">
+                    <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/>
+                </svg>
+                <span class="contact-label">GitHub</span>
+                <span class="contact-info">View my code</span>
+            </a>
+        </div>
+    </section>
+
+    <script>
+        // Animated text functionality
+        const texts = ['ARCHITECT', 'URBAN DATA SCIENCE', 'COMPUTATIONAL DESIGNER', 'AI EXPLORER', 'JOURNALISM'];
+        let currentTextIndex = 0;
+        const changingTextElement = document.querySelector('.text-slide');
+
+        function changeText() {
+            changingTextElement.style.opacity = '0';
+            changingTextElement.style.transform = 'translateY(-10px)';
+
+            setTimeout(() => {
+                currentTextIndex = (currentTextIndex + 1) % texts.length;
+                changingTextElement.textContent = texts[currentTextIndex];
+                changingTextElement.style.opacity = '1';
+                changingTextElement.style.transform = 'translateY(0)';
+            }, 300);
+        }
+
+        changingTextElement.textContent = texts[currentTextIndex];
+        setInterval(changeText, 2500);
+
+        // Slideshow functionality
+        let currentSlide = 0;
+        const slides = document.querySelectorAll('.slide-wrapper');
+        const indicators = document.querySelectorAll('.indicator');
+        const totalSlides = slides.length;
+
+        function showSlide(index) {
+            slides.forEach(slide => slide.classList.remove('active'));
+            indicators.forEach(indicator => indicator.classList.remove('active'));
+            slides[index].classList.add('active');
+            indicators[index].classList.add('active');
+            currentSlide = index;
+        }
+
+        function nextSlide() {
+            const next = (currentSlide + 1) % totalSlides;
+            showSlide(next);
+        }
+
+        let slideInterval = setInterval(nextSlide, 6000);
+
+        indicators.forEach((indicator, index) => {
+            indicator.addEventListener('click', () => {
+                showSlide(index);
+                clearInterval(slideInterval);
+                slideInterval = setInterval(nextSlide, 6000);
+            });
+        });
+
+        const slideContainer = document.querySelector('.slideshow-container');
+        slideContainer.addEventListener('mouseenter', () => {
+            clearInterval(slideInterval);
+        });
+
+        slideContainer.addEventListener('mouseleave', () => {
+            slideInterval = setInterval(nextSlide, 6000);
+        });
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowLeft') {
+                const prev = (currentSlide - 1 + totalSlides) % totalSlides;
+                showSlide(prev);
+                clearInterval(slideInterval);
+                slideInterval = setInterval(nextSlide, 6000);
+            } else if (e.key === 'ArrowRight') {
+                nextSlide();
+                clearInterval(slideInterval);
+                slideInterval = setInterval(nextSlide, 6000);
+            }
+        });
+
+        // Header scroll effect
+        window.addEventListener('scroll', () => {
+            const header = document.getElementById('header');
+            if (window.scrollY > 100) {
+                header.classList.add('scrolled');
+            } else {
+                header.classList.remove('scrolled');
+            }
+        });
+
+        // Mobile menu toggle
+        const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+        const navMenu = document.getElementById('navMenu');
+
+        mobileMenuBtn.addEventListener('click', () => {
+            navMenu.classList.toggle('active');
+            mobileMenuBtn.classList.toggle('active');
+        });
+
+        // Smooth scrolling for navigation links
+        document.querySelectorAll('.nav-link').forEach(link => {
+            link.addEventListener('click', (e) => {
+                const href = link.getAttribute('href');
+
+                // If it's a section link (starts with #), scroll to section
+                if (href.startsWith('#')) {
+                    e.preventDefault();
+                    const targetSection = document.querySelector(href);
+                    if (targetSection) {
+                        targetSection.scrollIntoView({
+                            behavior: 'smooth'
+                        });
+                    }
+                }
+                // Otherwise, it's a page link - let it navigate normally
+
+                navMenu.classList.remove('active');
+            });
+        });
+
+        // Force-directed graph for skills
+        function createSkillsGraph() {
+            const svg = d3.select('#skills-graph');
+            const container = document.querySelector('.graph-container');
+            const width = container.clientWidth;
+            const height = container.clientHeight;
+
+            svg.attr('width', width).attr('height', height);
+
+            // Skills data with categories and expertise levels
+            const skillsData = {
+                nodes: [
+                    // Programming & Development
+                    { id: 'Programming', category: 'Programming', expertise: 75, size: 18 },
+                    { id: 'Python', category: 'Programming', expertise: 75, size: 18 },
+                    { id: 'JavaScript', category: 'Programming', expertise: 25, size: 16 },
+                    { id: 'Java', category: 'Programming', expertise: 25, size: 14 },
+                    { id: 'R', category: 'Programming', expertise: 35, size: 12 },
+
+                    // AI/ML Tools
+                    { id: 'AI/ML', category: 'AI/ML', expertise: 85, size: 16 },
+                    { id: 'N8N', category: 'AI/ML', expertise: 85, size: 16 },
+                    { id: 'RAG AGENT', category: 'AI/ML', expertise: 80, size: 15 },
+                    { id: 'Scikit-learn', category: 'AI/ML', expertise: 70, size: 17 },
+                    { id: 'OpenCV', category: 'AI/ML', expertise: 75, size: 14 },
+                    { id: 'Roboflow', category: 'AI/ML', expertise: 70, size: 13 },
+
+                    // Design & Architecture
+                    { id: 'Design', category: 'Design', expertise: 95, size: 19 },
+                    { id: 'Rhino', category: 'Design', expertise: 95, size: 19 },
+                    { id: 'Grasshopper', category: 'Design', expertise: 90, size: 18 },
+                    { id: 'AutoCAD', category: 'Design', expertise: 95, size: 16 },
+                    { id: 'SketchUp', category: 'Design', expertise: 95, size: 15 },
+
+                    // GIS & Data Analysis
+                    { id: 'GIS', category: 'GIS', expertise: 95, size: 18 },
+                    { id: 'QGIS', category: 'GIS', expertise: 95, size: 18 },
+                    { id: 'ArcGIS', category: 'GIS', expertise: 65, size: 15 },
+                    { id: 'Google Earth Engine', category: 'GIS', expertise: 90, size: 16 },
+
+                    // Web Technologies
+                    { id: 'Web', category: 'Web', expertise: 50, size: 14 },
+                    { id: 'Node.js', category: 'Web', expertise: 35, size: 13 },
+                    { id: 'D3.js', category: 'Web', expertise: 35, size: 15 },
+                    { id: 'HTML/CSS', category: 'Web', expertise: 85, size: 16 },
+
+                    // Data Tools
+                    { id: 'Data', category: 'Data', expertise: 90, size: 18 },
+                    { id: 'Pandas', category: 'Data', expertise: 90, size: 18 },
+                    { id: 'Matplotlib', category: 'Data', expertise: 80, size: 15 },
+                    { id: 'Plotly', category: 'Data', expertise: 75, size: 14 },
+
+                    // Cloud & Deployment
+                    { id: 'AWS', category: 'Cloud', expertise: 30, size: 12 },
+                    { id: 'Git', category: 'Cloud', expertise: 80, size: 15 }
+                ],
+                links: [
+                    // Theme links from Programming
+                    { source: 'Programming', target: 'AI/ML', strength: 0.9 },
+                    { source: 'Programming', target: 'Web', strength: 0.9 },
+                    { source: 'Programming', target: 'Data', strength: 0.9 },
+                    { source: 'Programming', target: 'GIS', strength: 0.9 },
+                    { source: 'Programming', target: 'AWS', strength: 0.7 },
+                    { source: 'Programming', target: 'Git', strength: 0.7 },
+                    { source: 'Programming', target: 'Python', strength: 0.7 },
+
+
+                    // Design to GIS/Data
+                    { source: 'Design', target: 'GIS', strength: 0.9 },
+                    { source: 'Design', target: 'Data', strength: 0.9 },
+                    { source: 'Design', target: 'AutoCAD', strength: 0.9 },
+                    { source: 'Design', target: 'Rhino', strength: 0.9 },
+                    { source: 'Design', target: 'Grasshopper', strength: 0.9 },
+                    { source: 'Design', target: 'SketchUp', strength: 0.9 },
+
+                    // Internal connections
+                    { source: 'Data', target: 'N8N', strength: 0.8 },
+                    { source: 'AI/ML', target: 'N8N', strength: 0.8 },
+                    { source: 'RAG AGENT', target: 'N8N', strength: 0.8 },
+                    { source: 'RAG AGENT', target: 'AI/ML', strength: 0.8 },
+                    { source: 'GIS', target: 'QGIS', strength: 0.8 },
+                    { source: 'Google Earth Engine', target: 'QGIS', strength: 0.8 },
+                    { source: 'Google Earth Engine', target: 'Web', strength: 0.8 },
+                    { source: 'Data', target: 'AI/ML', strength: 0.7 },
+                    { source: 'Grasshopper', target: 'Python', strength: 0.7 },
+                    { source: 'Rhino', target: 'Grasshopper', strength: 0.9 },
+                    { source: 'AutoCAD', target: 'SketchUp', strength: 0.9 },
+                    { source: 'QGIS', target: 'Python', strength: 0.7 },
+                    { source: 'Google Earth Engine', target: 'JavaScript', strength: 0.8 },
+                    { source: 'JavaScript', target: 'Node.js', strength: 0.7 },
+                    { source: 'HTML/CSS', target: 'Git', strength: 0.7 },
+                    { source: 'Python', target: 'Scikit-learn', strength: 0.9 },
+                    { source: 'Python', target: 'OpenCV', strength: 0.7 },
+                    { source: 'Python', target: 'Pandas', strength: 0.9 },
+                    { source: 'Python', target: 'Matplotlib', strength: 0.8 },
+                    { source: 'Python', target: 'Plotly', strength: 0.7 },
+                    { source: 'Git', target: 'Python', strength: 0.6 },
+                    { source: 'Git', target: 'JavaScript', strength: 0.6 }
+                ]
+            };
+
+            // Color scale based on expertise
+            const colorScale = d3.scaleSequential()
+                .domain([20, 100])
+                .interpolator(d3.interpolateRgb('#fce38a', '#ff6b6b'));
+
+            // Create force simulation
+            const simulation = d3.forceSimulation(skillsData.nodes)
+                .force('link', d3.forceLink(skillsData.links).id(d => d.id).distance(80))
+                .force('charge', d3.forceManyBody().strength(-300))
+                .force('center', d3.forceCenter(width / 2, height / 2))
+                .force('collision', d3.forceCollide().radius(d => d.size + 5));
+
+            // Create links
+            const link = svg.append('g')
+                .selectAll('line')
+                .data(skillsData.links)
+                .enter().append('line')
+                .attr('stroke', '#ffffff')
+                .attr('stroke-opacity', 0.3)
+                .attr('stroke-width', d => d.strength * 3);
+
+            // Create nodes
+            const node = svg.append('g')
+                .selectAll('g')
+                .data(skillsData.nodes)
+                .enter().append('g')
+                .call(d3.drag()
+                    .on('start', dragstarted)
+                    .on('drag', dragged)
+                    .on('end', dragended));
+
+            // Add circles to nodes
+            node.append('circle')
+                .attr('r', d => d.size)
+                .attr('fill', d => colorScale(d.expertise))
+                .attr('stroke', '#ffffff')
+                .attr('stroke-width', 2)
+                .style('cursor', 'pointer');
+
+            // Add labels to nodes
+            node.append('text')
+                .text(d => d.id)
+                .attr('x', 0)
+                .attr('y', d => d.size + 20)
+                .attr('text-anchor', 'middle')
+                .attr('fill', '#ffffff')
+                .attr('font-size', '12px')
+                .attr('font-weight', '300')
+                .style('pointer-events', 'none');
+
+            // Add expertise percentage on hover
+            node.append('title')
+                .text(d => `${d.id}: ${d.expertise}% expertise`);
+
+            // Update positions on simulation tick
+            simulation.on('tick', () => {
+                link
+                    .attr('x1', d => d.source.x)
+                    .attr('y1', d => d.source.y)
+                    .attr('x2', d => d.target.x)
+                    .attr('y2', d => d.target.y);
+
+                node
+                    .attr('transform', d => `translate(${d.x},${d.y})`);
+            });
+
+            // Drag functions
+            function dragstarted(event, d) {
+                if (!event.active) simulation.alphaTarget(0.3).restart();
+                d.fx = d.x;
+                d.fy = d.y;
+            }
+
+            function dragged(event, d) {
+                d.fx = event.x;
+                d.fy = event.y;
+            }
+
+            function dragended(event, d) {
+                if (!event.active) simulation.alphaTarget(0);
+                d.fx = null;
+                d.fy = null;
+            }
+
+            // Add hover effects
+            node.on('mouseover', function(event, d) {
+                d3.select(this).select('circle')
+                    .transition()
+                    .duration(200)
+                    .attr('r', d.size * 1.2)
+                    .attr('stroke-width', 3);
+
+                // Highlight connected links
+                link.style('stroke-opacity', l =>
+                    l.source === d || l.target === d ? 0.8 : 0.1
+                );
+            })
+            .on('mouseout', function(event, d) {
+                d3.select(this).select('circle')
+                    .transition()
+                    .duration(200)
+                    .attr('r', d.size)
+                    .attr('stroke-width', 2);
+
+                // Reset link opacity
+                link.style('stroke-opacity', 0.3);
+            });
+        }
+
+        // Initialize skills graph when section comes into view
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting && entry.target.id === 'skills') {
+                    createSkillsGraph();
+                    observer.unobserve(entry.target);
+                }
+            });
+        });
+
+        observer.observe(document.getElementById('skills'));
+
+        // Handle window resize
+        window.addEventListener('resize', () => {
+            const skillsSection = document.getElementById('skills');
+            if (skillsSection.getBoundingClientRect().top < window.innerHeight) {
+                d3.select('#skills-graph').selectAll('*').remove();
+                createSkillsGraph();
+            }
+        });
+
+        // Add loading animation
+        window.addEventListener('load', () => {
+            document.body.style.opacity = '0';
+            document.body.style.transition = 'opacity 0.5s ease-in-out';
+            setTimeout(() => {
+                document.body.style.opacity = '1';
+            }, 100);
+        });
+    </script>
+</body>
+</html>

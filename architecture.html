@@ -1,0 +1,956 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Architecture Projects - Lakshmi Narayanan</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Courier New', monospace;
+            background: #000;
+            color: white;
+            overflow-x: hidden;
+            line-height: 1.6;
+        }
+
+        /* Header - Same as main page */
+        .header {
+            position: fixed;
+            top: 0;
+            left: 5;
+            width: 100%;
+            z-index: 1000;
+            padding: 20px 40px;
+            background: rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+        }
+
+        .header.scrolled {
+            background: rgba(0, 0, 0, 0.8);
+            padding: 15px 40px;
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: left;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .logo-section {
+            display: fix;
+            align-items: left;
+            gap: 20px;
+        }
+
+        .changing-text {
+            font-size: 1.2rem;
+            font-weight: 300;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            color: #4ecdc4;
+            text-shadow: 1px 1px 10px rgba(0, 0, 0, 0.5);
+            height: 30px;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+        }
+
+        .text-slide {
+            display: inline-block;
+            line-height: 30px;
+            transition: opacity 0.3s ease, transform 0.3s ease;
+        }
+
+        .logo {
+            font-size: 1.8rem;
+            font-weight: 300;
+            color: white;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        .nav-menu {
+            display: flex;
+            list-style: none;
+            gap: 40px;
+        }
+
+        .nav-item {
+            position: relative;
+        }
+
+        .nav-link {
+            color: white;
+            text-decoration: none;
+            font-size: 1.1rem;
+            font-weight: 300;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            transition: all 0.3s ease;
+            padding: 10px 0;
+            position: relative;
+        }
+
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: linear-gradient(90deg, #ff6b6b, #4ecdc4);
+            transition: width 0.3s ease;
+        }
+
+        .nav-link:hover::after {
+            width: 100%;
+        }
+
+        .nav-link:hover {
+            color: #4ecdc4;
+            transform: translateY(-2px);
+        }
+
+        /* Main Container */
+        .main-container {
+            padding-top: 120px;
+            min-height: 100vh;
+        }
+
+        /* Project Slides */
+        .projects-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 40px;
+        }
+
+        .project-slide {
+            display: flex;
+            align-items: center;
+            min-height: 90vh;
+            padding: 60px 0;
+            opacity: 0;
+            transform: translateY(50px);
+            transition: all 0.8s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .project-slide.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .project-slide:hover {
+            transform: translateY(-10px);
+        }
+
+        .project-slide:hover .project-image {
+            transform: scale(1.05);
+        }
+
+        .project-content {
+            flex: 1;
+            padding-right: 60px;
+            z-index: 2;
+            position: relative;
+        }
+
+        .project-number {
+            font-size: 1rem;
+            color: #4ecdc4;
+            letter-spacing: 2px;
+            margin-bottom: 20px;
+            opacity: 0.8;
+        }
+
+        .project-title {
+            font-size: 3rem;
+            font-weight: 300;
+            color: white;
+            margin-bottom: 20px;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            transition: all 0.3s ease;
+        }
+
+        .project-slide:hover .project-title {
+            color: #ff6b6b;
+        }
+
+        .project-description {
+            font-size: 1.1rem;
+            color: rgba(255, 255, 255, 0.8);
+            margin-bottom: 30px;
+            line-height: 1.8;
+            max-width: 500px;
+        }
+
+        .project-meta {
+            margin-bottom: 30px;
+        }
+
+        .project-year, .project-location {
+            display: inline-block;
+            font-size: 0.9rem;
+            color: #4ecdc4;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-right: 30px;
+        }
+
+        .project-links {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .project-link {
+            padding: 12px 25px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            text-decoration: none;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+            cursor: pointer;
+        }
+
+        .project-link:hover {
+            background: rgba(255, 255, 255, 0.2);
+            border-color: #4ecdc4;
+            transform: translateY(-2px);
+        }
+
+        .project-credits {
+            font-size: 0.8rem;
+            color: rgba(255, 255, 255, 0.6);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .project-image-container {
+            flex: 1;
+            position: relative;
+            height: 600px;
+            overflow: hidden;
+            border-radius: 10px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+        }
+
+        .project-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: all 0.5s ease;
+        }
+
+        /* Gallery Modal */
+        .gallery-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            z-index: 2000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .gallery-modal.active {
+            display: flex;
+        }
+
+        .gallery-content {
+            position: relative;
+            max-width: 90%;
+            max-height: 90%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .gallery-header {
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding: 0 20px;
+        }
+
+        .gallery-title {
+            font-size: 1.5rem;
+            color: white;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .gallery-counter {
+            font-size: 1rem;
+            color: #4ecdc4;
+            letter-spacing: 1px;
+        }
+
+        .gallery-main {
+            position: relative;
+            width: 100%;
+            max-width: 1000px;
+            height: 600px;
+            overflow: hidden;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+
+        .gallery-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: opacity 0.5s ease;
+        }
+
+        .gallery-nav {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(0, 0, 0, 0.5);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            padding: 15px 20px;
+            cursor: pointer;
+            font-size: 1.2rem;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+
+        .gallery-nav:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: #4ecdc4;
+        }
+
+        .gallery-prev {
+            left: 20px;
+        }
+
+        .gallery-next {
+            right: 20px;
+        }
+
+        .gallery-thumbnails {
+            display: flex;
+            gap: 10px;
+            padding: 0 20px;
+            max-width: 100%;
+            overflow-x: auto;
+        }
+
+        .gallery-thumbnail {
+            width: 80px;
+            height: 60px;
+            object-fit: cover;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+
+        .gallery-thumbnail:hover,
+        .gallery-thumbnail.active {
+            border-color: #4ecdc4;
+            transform: scale(1.1);
+        }
+
+        .close-button {
+            position: absolute;
+            top: 40px;
+            right: 40px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            padding: 15px 20px;
+            cursor: pointer;
+            font-size: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+            z-index: 2001;
+        }
+
+        .close-button:hover {
+            background: rgba(255, 255, 255, 0.2);
+            border-color: #ff6b6b;
+            transform: translateY(-2px);
+        }
+
+        /* Scroll Progress Bar */
+        .scroll-progress {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 0%;
+            height: 3px;
+            background: linear-gradient(90deg, #ff6b6b, #4ecdc4);
+            z-index: 1001;
+            transition: width 0.1s ease;
+        }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes zoomIn {
+            from {
+                opacity: 0;
+                transform: scale(0.8);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        /* Mobile Responsiveness */
+        @media (max-width: 768px) {
+            .header {
+                padding: 15px 20px;
+            }
+
+            .logo {
+                font-size: 1.4rem;
+            }
+
+            .nav-menu {
+                display: none;
+            }
+
+            .projects-container {
+                padding: 0 20px;
+            }
+
+            .project-slide {
+                flex-direction: column;
+                text-align: center;
+                min-height: auto;
+                padding: 40px 0;
+            }
+
+            .project-content {
+                padding-right: 0;
+                margin-bottom: 40px;
+            }
+
+            .project-title {
+                font-size: 2rem;
+            }
+
+            .project-image-container {
+                height: 400px;
+                width: 100%;
+            }
+
+            .project-links {
+                justify-content: center;
+            }
+
+            .close-button {
+                top: 20px;
+                right: 20px;
+                padding: 10px 15px;
+                font-size: 0.9rem;
+            }
+
+            .gallery-nav {
+                padding: 10px 15px;
+                font-size: 1rem;
+            }
+
+            .gallery-main {
+                height: 400px;
+            }
+
+            .gallery-thumbnails {
+                padding: 0 10px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .project-title {
+                font-size: 1.5rem;
+            }
+
+            .project-description {
+                font-size: 1rem;
+            }
+
+            .project-image-container {
+                height: 300px;
+            }
+
+            .gallery-main {
+                height: 300px;
+            }
+
+            .gallery-title {
+                font-size: 1.2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="scroll-progress" id="scrollProgress"></div>
+
+    <header class="header" id="header">
+        <div class="header-content">
+            <div class="logo-section">
+                <div class="logo"><a href="portfolio_landing.html" class="nav-link">LAKSHMI NARAYANAN</a></div>
+                <div class="changing-text">
+                    <div class="text-slide">ARCHITECT</div>
+                </div>
+            </div>
+            <nav>
+                <ul class="nav-menu" id="navMenu">
+                    <li class="nav-item"><a href="architecture.html" class="nav-link">Architecture</a></li>
+                    <li class="nav-item"><a href="urbanism.html" class="nav-link">Urbanism</a></li>
+                </ul>
+                <div class="mobile-menu-btn" id="mobileMenuBtn">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
+            </nav>
+        </div>
+    </header>
+
+    <main class="main-container">
+        <div class="projects-container" id="projectsContainer">
+            <!-- Project 1 -->
+            <div class="project-slide" data-project="1">
+                <div class="project-content">
+                    <div class="project-number">01</div>
+                    <h2 class="project-title">GV1 Chemical Campus</h2>
+                    <p class="project-description">
+                        Dear readers, this is a chemical campus constructed between metal fins, creating the impression that the building is held together by metal membranes. The atrium detailing features a continuous glass frame that transitions seamlessly from the façade to the roof structure.
+                    </p>
+                    <div class="project-meta">
+                        <span class="project-year">2022</span>
+                        <span class="project-location">Hyderabad, India</span>
+                    </div>
+                    <div class="project-links">
+                        <button class="project-link view-details-btn" data-project="1">Gallery</button>
+                        <a href="https://www.abrd.in/" class="project-link">Link</a>
+                    </div>
+                    <div class="project-credits">
+                        PROJECT TYPE: PROFESSIONAL | FIRM: ABRD ARCHITECTS
+                    </div>
+                </div>
+                <div class="project-image-container">
+                    <img src="render.jpg"
+                         alt="GV1 Chemical Campus"
+                         class="project-image">
+                </div>
+            </div>
+
+            <!-- Project 2 -->
+            <div class="project-slide" data-project="2">
+                <div class="project-content">
+                    <div class="project-number">02</div>
+                    <h2 class="project-title">Koya cube</h2>
+                    <p class="project-description">
+                        Dear readers, this is a freelancing project for fabrication company in Germany. The script in grasshopper + Python creates a parametric module based on user's input sizes and uploads to shapediver for visualization. Then, it provides the fabrication codes and sizes.
+                    </p>
+                    <div class="project-meta">
+                        <span class="project-year">2024</span>
+                        <span class="project-location">Gilching, Germany</span>
+                    </div>
+                    <div class="project-links">
+                        <button class="project-link view-details-btn" data-project="2">Gallery</button>
+                        <a href="https://www.koya-cube.com/en" class="project-link">Link</a>
+                    </div>
+                    <div class="project-credits">
+                        PROJECT TYPE: PROFESSIONAL | Collaboration: Sanjaykumar
+                    </div>
+                </div>
+                <div class="project-image-container">
+                    <img src="koya cube.gif"
+                         alt="Urban Cultural Center"
+                         class="project-image">
+                </div>
+            </div>
+
+            <!-- Project 3 -->
+            <div class="project-slide" data-project="3">
+                <div class="project-content">
+                    <div class="project-number">03</div>
+                    <h2 class="project-title">Capella school district</h2>
+                    <p class="project-description">
+                        Dear readers, this is a master plan for a hybrid school district. It was staged upon a generative site planning using Termite nest plugin from grasshopper and some basic algorithmic computation.
+                    </p>
+                    <div class="project-meta">
+                        <span class="project-year">2023</span>
+                        <span class="project-location">Hyderabad, India</span>
+                    </div>
+                    <div class="project-links">
+                        <button class="project-link view-details-btn" data-project="3">Gallery</button>
+                        <a href="https://www.abrd.in/" class="project-link">Link</a>
+                    </div>
+                    <div class="project-credits">
+                        PROJECT TYPE: PROFESSIONAL | FIRM: ABRD ARCHITECTS
+                    </div>
+                </div>
+                <div class="project-image-container">
+                    <img src="plaza.jpg"
+                         alt="Sustainable Housing Complex"
+                         class="project-image">
+                </div>
+            </div>
+
+            <!-- Project 4 -->
+            <div class="project-slide" data-project="4">
+                <div class="project-content">
+                    <div class="project-number">04</div>
+                    <h2 class="project-title">DNL</h2>
+                    <p class="project-description">
+                        Dear readers, this is a corporate campus articulated with large volumes and intricate detailing blending the materials and local climate.
+                    </p>
+                    <div class="project-meta">
+                        <span class="project-year">2023</span>
+                        <span class="project-location">Ahmedabad, India</span>
+                    </div>
+                    <div class="project-links">
+                        <button class="project-link view-details-btn" data-project="4">Gallery</button>
+                        <a href="#" class="project-link">Link</a>
+                    </div>
+                    <div class="project-credits">
+                        PROJECT TYPE: PROFESSIONAL | FIRM: ABRD ARCHITECTS
+                    </div>
+                </div>
+                <div class="project-image-container">
+                    <img src="DNL.jpg"
+                         alt="DNL Project"
+                         class="project-image">
+                </div>
+            </div>
+
+            <!-- Project 5 -->
+            <div class="project-slide" data-project="5">
+                <div class="project-content">
+                    <div class="project-number">05</div>
+                    <h2 class="project-title">Competitions</h2>
+                    <p class="project-description">
+                        Dear readers, I am happy to share few of many competitions I attended in order to explore design knowledge and softwares. I gained knowledge in AI, Rhino-grasshopper, Adobe suite and other softwares through these entries.
+                    </p>
+                    <div class="project-meta">
+                        <span class="project-year">2017 - 2025</span>
+                        <span class="project-location">Global</span>
+                    </div>
+                    <div class="project-links">
+                        <button class="project-link view-details-btn" data-project="5">Gallery</button>
+                    </div>
+                    <div class="project-credits">
+                        PROJECT TYPE: COMPETITION | TEAM: LAKSHMI NARAYANAN + COLLABORATORS
+                    </div>
+                </div>
+                <div class="project-image-container">
+                    <img src="exp1.effectsResult.png"
+                         alt="Future Cities Competition"
+                         class="project-image">
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Gallery Modal -->
+    <div class="gallery-modal" id="galleryModal">
+        <button class="close-button" id="closeButton">✕ Close</button>
+        <div class="gallery-content">
+            <div class="gallery-header">
+                <h3 class="gallery-title" id="galleryTitle">Project Gallery</h3>
+                <div class="gallery-counter">
+                    <span id="currentImage">1</span> / <span id="totalImages">3</span>
+                </div>
+            </div>
+            <div class="gallery-main">
+                <img id="galleryMainImage" class="gallery-image" src="" alt="">
+                <button class="gallery-nav gallery-prev" id="prevImage">‹</button>
+                <button class="gallery-nav gallery-next" id="nextImage">›</button>
+            </div>
+            <div class="gallery-thumbnails" id="galleryThumbnails">
+                <!-- Thumbnails will be dynamically generated -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Project gallery data
+        const projectGalleries = {
+            1: {
+                title: "GV1 Chemical Campus",
+                images: [
+                    {
+                        src: "plan 1.jpg",
+                        alt: "GV1 Chemical Campus - Exterior View"
+                    },
+                    {
+                        src: "atrium detail.jpg",
+                        alt: "GV1 Chemical Campus - Atrium Detail"
+                    },
+                    {
+                        src: "gv 1.1-02-01.jpg",
+                        alt: "GV1 Chemical Campus - Metal Fin Detail"
+                    }
+                ]
+            },
+            2: {
+                title: "Koya cube",
+                images: [
+                    {
+                        src: "koya 1.jpg",
+                        alt: "Urban Cultural Center - Main Facade"
+                    },
+                    {
+                        src: "Koya 2.jpg",
+                        alt: "Urban Cultural Center - Interior Space"
+                    }
+                ]
+            },
+            3: {
+                title: "School District",
+                images: [
+                    {
+                        src: "capella 2.jpg",
+                        alt: "Sustainable Housing - Overview"
+                    },
+                    {
+                        src: "capella 3.jpg",
+                        alt: "Sustainable Housing - Green Roof System"
+                    },
+                    {
+                        src: "campus entry.jpg",
+                        alt: "Sustainable Housing - Community Spaces"
+                    }
+                ]
+            },
+            4: {
+                title: "DNL",
+                images: [
+                    {
+                        src: "Section 1.jpg",
+                        alt: "DNL Project - Structure Detail"
+                    },
+                    {
+                        src: "professional 3-01.jpg",
+                        alt: "DNL Project - Interior View"
+                    },
+                    {
+                        src: "professional 2-01.jpg",
+                        alt: "DNL Project - Night View"
+                    }
+                ]
+            },
+            5: {
+                title: "Competitions",
+                images: [
+                    {
+                        src: "building.jpg",
+                        alt: "Future Cities Competition - Master Plan"
+                    },
+                    {
+                        src: "sheet 1-01.jpg",
+                        alt: "Future Cities Competition - Modular Housing Units"
+                    },
+                    {
+                        src: "cover 1.jpg",
+                        alt: "Future Cities Competition - Community Spaces"
+                    }
+                ]
+            }
+        };
+
+        let currentProject = null;
+        let currentImageIndex = 0;
+
+        // Gallery modal elements
+        const galleryModal = document.getElementById('galleryModal');
+        const galleryTitle = document.getElementById('galleryTitle');
+        const galleryMainImage = document.getElementById('galleryMainImage');
+        const galleryThumbnails = document.getElementById('galleryThumbnails');
+        const currentImageSpan = document.getElementById('currentImage');
+        const totalImagesSpan = document.getElementById('totalImages');
+        const closeButton = document.getElementById('closeButton');
+        const prevButton = document.getElementById('prevImage');
+        const nextButton = document.getElementById('nextImage');
+
+        // Scroll Progress Bar
+        function updateScrollProgress() {
+            const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+            const scrollHeight = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+            const scrollProgress = (scrollTop / scrollHeight) * 100;
+            document.getElementById('scrollProgress').style.width = scrollProgress + '%';
+        }
+
+        window.addEventListener('scroll', updateScrollProgress);
+
+        // Intersection Observer for slide animations
+        const observerOptions = {
+            threshold: 0.3,
+            rootMargin: '0px 0px -100px 0px'
+        };
+
+        const slideObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                }
+            });
+        }, observerOptions);
+
+        // Observe all project slides
+        document.querySelectorAll('.project-slide').forEach(slide => {
+            slideObserver.observe(slide);
+        });
+
+        // View Details button functionality
+        document.querySelectorAll('.view-details-btn').forEach(button => {
+            button.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const projectId = button.getAttribute('data-project');
+                openGallery(projectId);
+            });
+        });
+
+        function openGallery(projectId) {
+            currentProject = projectGalleries[projectId];
+            if (!currentProject) return;
+
+            currentImageIndex = 0;
+
+            // Set gallery title
+            galleryTitle.textContent = currentProject.title;
+
+            // Set total images count
+            totalImagesSpan.textContent = currentProject.images.length;
+
+            // Generate thumbnails
+            generateThumbnails();
+
+            // Display first image
+            displayImage(0);
+
+            // Show modal
+            galleryModal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function generateThumbnails() {
+            galleryThumbnails.innerHTML = '';
+            currentProject.images.forEach((image, index) => {
+                const thumbnail = document.createElement('img');
+                thumbnail.src = image.src;
+                thumbnail.alt = image.alt;
+                thumbnail.className = 'gallery-thumbnail';
+                if (index === 0) thumbnail.classList.add('active');
+
+                thumbnail.addEventListener('click', () => {
+                    displayImage(index);
+                });
+
+                galleryThumbnails.appendChild(thumbnail);
+            });
+        }
+
+        function displayImage(index) {
+            if (!currentProject || index < 0 || index >= currentProject.images.length) return;
+
+            currentImageIndex = index;
+            const image = currentProject.images[index];
+
+            // Update main image
+            galleryMainImage.src = image.src;
+            galleryMainImage.alt = image.alt;
+
+            // Update counter
+            currentImageSpan.textContent = index + 1;
+
+            // Update active thumbnail
+            document.querySelectorAll('.gallery-thumbnail').forEach((thumb, i) => {
+                thumb.classList.toggle('active', i === index);
+            });
+        }
+
+        function nextImage() {
+            const nextIndex = (currentImageIndex + 1) % currentProject.images.length;
+            displayImage(nextIndex);
+        }
+
+        function prevImage() {
+            const prevIndex = currentImageIndex === 0 ? currentProject.images.length - 1 : currentImageIndex - 1;
+            displayImage(prevIndex);
+        }
+
+        function closeGallery() {
+            galleryModal.classList.remove('active');
+            document.body.style.overflow = 'auto';
+            currentProject = null;
+        }
+
+        // Event listeners for gallery navigation
+        nextButton.addEventListener('click', nextImage);
+        prevButton.addEventListener('click', prevImage);
+        closeButton.addEventListener('click', closeGallery);
+
+        // Keyboard navigation
+        document.addEventListener('keydown', (e) => {
+            if (galleryModal.classList.contains('active')) {
+                switch(e.key) {
+                    case 'Escape':
+                        closeGallery();
+                        break;
+                    case 'ArrowRight':
+                        nextImage();
+                        break;
+                    case 'ArrowLeft':
+                        prevImage();
+                        break;
+                }
+            } else {
+                // Original keyboard navigation for page scrolling
+                if (e.key === 'ArrowDown') {
+                    window.scrollBy(0, window.innerHeight * 0.8);
+                } else if (e.key === 'ArrowUp') {
+                    window.scrollBy(0, -window.innerHeight * 0.8);
+                }
+            }
+        });
+
+        // Close on background click
+        galleryModal.addEventListener('click', (e) => {
+            if (e.target === galleryModal) {
+                closeGallery();
+            }
+        });
+
+        // Initialize
+        window.addEventListener('load', () => {
+            updateScrollProgress();
+        });
+    </script>
+</body>
+</html>

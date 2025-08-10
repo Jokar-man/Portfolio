@@ -1,0 +1,1118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Urbanism Projects - Lakshmi Narayanan</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Courier New', monospace;
+            background: #000;
+            color: white;
+            overflow-x: hidden;
+            line-height: 1.6;
+        }
+
+        /* Header - Same as main page */
+        .header {
+            position: fixed;
+            top: 0;
+            left: 5;
+            width: 100%;
+            z-index: 1000;
+            padding: 20px 40px;
+            background: rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+        }
+
+        .header.scrolled {
+            background: rgba(0, 0, 0, 0.8);
+            padding: 15px 40px;
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: left;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .logo-section {
+            display: fix;
+            align-items: left;
+            gap: 20px;
+        }
+
+        .changing-text {
+            font-size: 1.2rem;
+            font-weight: 300;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            color: #4ecdc4;
+            text-shadow: 1px 1px 10px rgba(0, 0, 0, 0.5);
+            height: 30px;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+        }
+
+        .text-slide {
+            display: inline-block;
+            line-height: 30px;
+            transition: opacity 0.3s ease, transform 0.3s ease;
+        }
+
+        .logo {
+            font-size: 1.8rem;
+            font-weight: 300;
+            color: white;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        .nav-menu {
+            display: flex;
+            list-style: none;
+            gap: 40px;
+        }
+
+        .nav-item {
+            position: relative;
+        }
+
+        .nav-link {
+            color: white;
+            text-decoration: none;
+            font-size: 1.1rem;
+            font-weight: 300;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            transition: all 0.3s ease;
+            padding: 10px 0;
+            position: relative;
+        }
+
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: linear-gradient(90deg, #ff6b6b, #4ecdc4);
+            transition: width 0.3s ease;
+        }
+
+        .nav-link:hover::after {
+            width: 100%;
+        }
+
+        .nav-link:hover {
+            color: #4ecdc4;
+            transform: translateY(-2px);
+        }
+
+        /* Main Container */
+        .main-container {
+            padding-top: 120px;
+            min-height: 100vh;
+        }
+
+        /* Project Slides */
+        .projects-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 40px;
+        }
+
+        .project-slide {
+            display: flex;
+            align-items: center;
+            min-height: 90vh;
+            padding: 60px 0;
+            opacity: 0;
+            transform: translateY(50px);
+            transition: all 0.8s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .project-slide.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .project-slide:hover {
+            transform: translateY(-10px);
+        }
+
+        .project-slide:hover .project-image {
+            transform: scale(1.05);
+        }
+
+        .project-content {
+            flex: 1;
+            padding-right: 60px;
+            z-index: 2;
+            position: relative;
+        }
+
+        .project-number {
+            font-size: 1rem;
+            color: #4ecdc4;
+            letter-spacing: 2px;
+            margin-bottom: 20px;
+            opacity: 0.8;
+        }
+
+        .project-title {
+            font-size: 3rem;
+            font-weight: 300;
+            color: white;
+            margin-bottom: 20px;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            transition: all 0.3s ease;
+        }
+
+        .project-slide:hover .project-title {
+            color: #ff6b6b;
+        }
+
+        .project-description {
+            font-size: 1.1rem;
+            color: rgba(255, 255, 255, 0.8);
+            margin-bottom: 30px;
+            line-height: 1.8;
+            max-width: 500px;
+        }
+
+        .project-meta {
+            margin-bottom: 30px;
+        }
+
+        .project-year, .project-location {
+            display: inline-block;
+            font-size: 0.9rem;
+            color: #4ecdc4;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-right: 30px;
+        }
+
+        .project-links {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .project-link {
+            padding: 12px 25px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            text-decoration: none;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+            cursor: pointer;
+        }
+
+        .project-link:hover {
+            background: rgba(255, 255, 255, 0.2);
+            border-color: #4ecdc4;
+            transform: translateY(-2px);
+        }
+
+        .project-credits {
+            font-size: 0.8rem;
+            color: rgba(255, 255, 255, 0.6);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .project-image-container {
+            flex: 1;
+            position: relative;
+            height: 600px;
+            overflow: hidden;
+            border-radius: 10px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+        }
+
+        .project-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: all 0.5s ease;
+        }
+
+        /* Gallery Modal */
+        .gallery-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            z-index: 2000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .gallery-modal.active {
+            display: flex;
+        }
+
+        .gallery-content {
+            position: relative;
+            max-width: 95%;
+            max-height: 95%;
+            display: flex;
+            align-items: center;
+            gap: 40px;
+        }
+
+        .gallery-left {
+            flex: 1.2;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .gallery-right {
+            flex: 0.8;
+            padding-left: 40px;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            max-height: 600px;
+            overflow-y: auto;
+        }
+
+        .gallery-header {
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding: 0 20px;
+        }
+
+        .gallery-title {
+            font-size: 1.5rem;
+            color: white;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .gallery-counter {
+            font-size: 1rem;
+            color: #4ecdc4;
+            letter-spacing: 1px;
+        }
+
+        .gallery-main {
+            position: relative;
+            width: 100%;
+            max-width: 800px;
+            height: 500px;
+            overflow: hidden;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+
+        .gallery-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: opacity 0.5s ease;
+        }
+
+        .gallery-nav {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(0, 0, 0, 0.7);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            padding: 15px 20px;
+            cursor: pointer;
+            font-size: 1.2rem;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+
+        .gallery-nav:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: #4ecdc4;
+        }
+
+        .gallery-prev {
+            left: 20px;
+        }
+
+        .gallery-next {
+            right: 20px;
+        }
+
+        .gallery-thumbnails {
+            display: flex;
+            gap: 10px;
+            padding: 0 20px;
+            max-width: 100%;
+            overflow-x: auto;
+        }
+
+        .gallery-thumbnail {
+            width: 80px;
+            height: 60px;
+            object-fit: cover;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+            flex-shrink: 0;
+        }
+
+        .gallery-thumbnail:hover,
+        .gallery-thumbnail.active {
+            border-color: #4ecdc4;
+            transform: scale(1.1);
+        }
+
+        .gallery-text-content {
+            padding: 20px 0;
+        }
+
+        .gallery-image-title {
+            font-size: 1.3rem;
+            color: #4ecdc4;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 15px;
+            border-bottom: 1px solid rgba(78, 205, 196, 0.3);
+            padding-bottom: 10px;
+        }
+
+        .gallery-image-description {
+            font-size: 1rem;
+            color: rgba(255, 255, 255, 0.9);
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+
+        .gallery-image-details {
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.7);
+            line-height: 1.5;
+        }
+
+        .gallery-image-details strong {
+            color: #ff6b6b;
+            display: block;
+            margin-bottom: 5px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .gallery-note {
+            font-size: 0.9rem;
+            color: #ff6b6b;
+            font-style: italic;
+            margin-bottom: 15px;
+            border-left: 2px solid #ff6b6b;
+            padding-left: 10px;
+        }
+
+        .gallery-tools {
+            font-size: 0.8rem;
+            color: #4ecdc4;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid rgba(78, 205, 196, 0.2);
+        }
+
+        .close-button {
+            position: absolute;
+            top: 40px;
+            right: 40px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            padding: 15px 20px;
+            cursor: pointer;
+            font-size: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+            z-index: 2001;
+        }
+
+        .close-button:hover {
+            background: rgba(255, 255, 255, 0.2);
+            border-color: #ff6b6b;
+            transform: translateY(-2px);
+        }
+
+        /* Scroll Progress Bar */
+        .scroll-progress {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 0%;
+            height: 3px;
+            background: linear-gradient(90deg, #ff6b6b, #4ecdc4);
+            z-index: 1001;
+            transition: width 0.1s ease;
+        }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        /* Mobile Responsiveness */
+        @media (max-width: 1024px) {
+            .gallery-content {
+                flex-direction: column;
+                gap: 20px;
+            }
+
+            .gallery-right {
+                padding-left: 0;
+                max-height: 300px;
+                width: 100%;
+            }
+
+            .gallery-main {
+                height: 400px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .header {
+                padding: 15px 20px;
+            }
+
+            .logo {
+                font-size: 1.4rem;
+            }
+
+            .nav-menu {
+                display: none;
+            }
+
+            .projects-container {
+                padding: 0 20px;
+            }
+
+            .project-slide {
+                flex-direction: column;
+                text-align: center;
+                min-height: auto;
+                padding: 40px 0;
+            }
+
+            .project-content {
+                padding-right: 0;
+                margin-bottom: 40px;
+            }
+
+            .project-title {
+                font-size: 2rem;
+            }
+
+            .project-image-container {
+                height: 400px;
+                width: 100%;
+            }
+
+            .project-links {
+                justify-content: center;
+            }
+
+            .close-button {
+                top: 20px;
+                right: 20px;
+                padding: 10px 15px;
+                font-size: 0.9rem;
+            }
+
+            .gallery-nav {
+                padding: 10px 15px;
+                font-size: 1rem;
+            }
+
+            .gallery-main {
+                height: 300px;
+            }
+
+            .gallery-thumbnails {
+                padding: 0 10px;
+            }
+
+            .gallery-content {
+                max-width: 95%;
+                padding: 20px;
+            }
+
+            .gallery-right {
+                max-height: 200px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .project-title {
+                font-size: 1.5rem;
+            }
+
+            .project-description {
+                font-size: 1rem;
+            }
+
+            .project-image-container {
+                height: 300px;
+            }
+
+            .gallery-main {
+                height: 250px;
+            }
+
+            .gallery-title {
+                font-size: 1.2rem;
+            }
+
+            .gallery-image-title {
+                font-size: 1.1rem;
+            }
+
+            .gallery-image-description {
+                font-size: 0.9rem;
+            }
+        }
+
+        /* Custom scrollbar for gallery text */
+        .gallery-right::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .gallery-right::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 2px;
+        }
+
+        .gallery-right::-webkit-scrollbar-thumb {
+            background: #4ecdc4;
+            border-radius: 2px;
+        }
+
+        .gallery-right::-webkit-scrollbar-thumb:hover {
+            background: #ff6b6b;
+        }
+    </style>
+</head>
+<body>
+    <div class="scroll-progress" id="scrollProgress"></div>
+
+    <header class="header" id="header">
+        <div class="header-content">
+            <div class="logo-section">
+                <div class="logo"><a href="portfolio_landing.html" class="nav-link">LAKSHMI NARAYANAN</a></div>
+                <div class="changing-text">
+                    <div class="text-slide">ARCHITECT</div>
+                </div>
+            </div>
+            <nav>
+                <ul class="nav-menu" id="navMenu">
+                    <li class="nav-item"><a href="architecture.html" class="nav-link">Architecture</a></li>
+                    <li class="nav-item"><a href="urbanism.html" class="nav-link">Urbanism</a></li>
+                </ul>
+                <div class="mobile-menu-btn" id="mobileMenuBtn">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
+            </nav>
+        </div>
+    </header>
+
+    <main class="main-container">
+        <div class="projects-container" id="projectsContainer">
+            <!-- Project 1 -->
+            <div class="project-slide" data-project="1">
+                <div class="project-content">
+                    <div class="project-number">01</div>
+                    <h2 class="project-title">Rundu mobility justice framework</h2>
+                    <p class="project-description">
+                        Dear readers, this project studies the urban vulnerability and injustice in Ndama(a small settlement in Rundu) through the lens of mobility. We established a website compiling all the data collected and use NLP/LLM to cluster the stakeholder's data through weights in GNN for the urban planners and government generals in order to address the problem.
+                    </p>
+                    <div class="project-meta">
+                        <span class="project-year">2025</span>
+                        <span class="project-location">Rundu, Namibia</span>
+                    </div>
+                    <div class="project-links">
+                        <button class="project-link view-details-btn" data-project="1">Gallery</button>
+                        <a href="https://github.com/Jokar-man/Rundu_website" class="project-link">Link</a>
+                    </div>
+                    <div class="project-credits">
+                        PROJECT TYPE: ACADEMIC + PROFESSIONAL | COLLABORATION: TEAM + GIZ + UNITAC
+                    </div>
+                </div>
+                <div class="project-image-container">
+                    <img src="centralndama-ezgif.com-video-to-gif-converter.gif"
+                         alt="Rundu mobility"
+                         class="project-image">
+                </div>
+            </div>
+
+            <!-- Project 2 -->
+            <div class="project-slide" data-project="2">
+                <div class="project-content">
+                    <div class="project-number">02</div>
+                    <h2 class="project-title">Wild fire vulnerability</h2>
+                    <p class="project-description">
+                        Dear readers, this project does a forensic approach to the spatial data using Roboflow and Google Earth Engine dataset. We published a global dataset in GEE which calculates the NDVI-NDMI correlation over last six months and also places in city with Fire stations and hospitals which can fight fire on a outbreak.
+                    </p>
+                    <div class="project-meta">
+                        <span class="project-year">2025</span>
+                        <span class="project-location">Global</span>
+                    </div>
+                    <div class="project-links">
+                        <button class="project-link view-details-btn" data-project="2">Gallery</button>
+                        <a href="https://ee-lakshminarayananvadamalai.projects.earthengine.app/view/wild-fire-compliance" class="project-link">Link</a>
+                    </div>
+                    <div class="project-credits">
+                        PROJECT TYPE: ACADEMIC | Collaboration: TEAM
+                    </div>
+                </div>
+                <div class="project-image-container">
+                    <img src="Fire.png"
+                         alt="Koya Cube"
+                         class="project-image">
+                </div>
+            </div>
+
+            <!-- Project 3 -->
+            <div class="project-slide" data-project="3">
+                <div class="project-content">
+                    <div class="project-number">03</div>
+                    <h2 class="project-title">AI Participatory - Open city Poblenou</h2>
+                    <p class="project-description">
+                        Hi Readers, This is my academic work showcasing my work and exploration done using tools like n8n, comfyUI and many other LLMs to empower the participatory design process. I explored training models in Comfyui to sketch like humans, use vision models from GPT-40 and Roboflow to create a AI participatory design.
+                    </p>
+                    <div class="project-meta">
+                        <span class="project-year">2025</span>
+                        <span class="project-location">Barcelona, Spain</span>
+                    </div>
+                    <div class="project-links">
+                        <button class="project-link view-details-btn" data-project="3">Gallery</button>
+                        <a href="https://blog.iaac.net/open-city-poblenou/" class="project-link">Link</a>
+                    </div>
+                    <div class="project-credits">
+                        PROJECT TYPE: ACADEMIC | COLLABORATION: TEAM
+                    </div>
+                </div>
+                <div class="project-image-container">
+                    <img src="Google_pob.gif"
+                         alt="Capella School District"
+                         class="project-image">
+                </div>
+            </div>
+
+            <!-- Project 4 -->
+            <div class="project-slide" data-project="4">
+                <div class="project-content">
+                    <div class="project-number">04</div>
+                    <h2 class="project-title">Heat Archipelagos</h2>
+                    <p class="project-description">
+                        Hi Readers, This is my academic work in IAAC, showcasing study of heat in different cities and creating a archipelago model for 105 cities through unsupervised machine learning. Tools like grasshopper, GEE and python were used during this project.
+                    </p>
+                    <div class="project-meta">
+                        <span class="project-year">2023</span>
+                        <span class="project-location">Global</span>
+                    </div>
+                    <div class="project-links">
+                        <button class="project-link view-details-btn" data-project="4">Gallery</button>
+                        <a href="https://blog.iaac.net/heat-archipelagos/" class="project-link">Link</a>
+                    </div>
+                    <div class="project-credits">
+                        PROJECT TYPE: ACADEMIC | COLLABORATION: TEAM
+                    </div>
+                </div>
+                <div class="project-image-container">
+                    <img src="1-01.jpg"
+                         alt="DNL Project"
+                         class="project-image">
+                </div>
+            </div>
+
+            <!-- Project 5 -->
+            <div class="project-slide" data-project="5">
+                <div class="project-content">
+                    <div class="project-number">05</div>
+                    <h2 class="project-title">USA - COVID time analysis</h2>
+                    <p class="project-description">
+                        Dear readers, I am happy to share few of many competitions I attended in order to explore design knowledge and softwares. I gained knowledge in AI, Rhino-grasshopper, Adobe suite and other softwares through these entries.
+                    </p>
+                    <div class="project-meta">
+                        <span class="project-year">2017 - 2025</span>
+                        <span class="project-location">Global</span>
+                    </div>
+                    <div class="project-credits">
+                        PROJECT TYPE: COMPETITION | TEAM: LAKSHMI NARAYANAN + COLLABORATORS
+                    </div>
+                </div>
+                <div class="project-image-container">
+                    <img src="plot 2021.png"
+                         alt="Competition Projects"
+                         class="project-image">
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Gallery Modal -->
+    <div class="gallery-modal" id="galleryModal">
+        <button class="close-button" id="closeButton">✕ Close</button>
+        <div class="gallery-content">
+            <div class="gallery-left">
+                <div class="gallery-header">
+                    <h3 class="gallery-title" id="galleryTitle">Project Gallery</h3>
+                    <div class="gallery-counter">
+                        <span id="currentImage">1</span> / <span id="totalImages">3</span>
+                    </div>
+                </div>
+                <div class="gallery-main">
+                    <img id="galleryMainImage" class="gallery-image" src="" alt="">
+                    <button class="gallery-nav gallery-prev" id="prevImage">‹</button>
+                    <button class="gallery-nav gallery-next" id="nextImage">›</button>
+                </div>
+                <div class="gallery-thumbnails" id="galleryThumbnails">
+                    <!-- Thumbnails will be dynamically generated -->
+                </div>
+            </div>
+            <div class="gallery-right">
+                <div class="gallery-text-content" id="galleryTextContent">
+                    <!-- Text content will be dynamically generated -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Project gallery data with text descriptions
+        const projectGalleries = {
+            1: {
+                title: "Rundu Mobility justice framework",
+                note: "Website for urban planners and stakeholders consisting of processed data.",
+                tools: "Qgis, Mapbox, Python, Js, Github, Vercel, Overture",
+                images: [
+                    {
+                        src: "Rundu_web.gif",
+                        alt: "GV1 Chemical Campus - Site Plan",
+                        title: "Rundu Tracker",
+                        description: "Different vulnerabilites mapped for the planners to visualize with customisable weights as per their changing focus.",
+                        details: "<strong>TOOLS:</strong> Js, HTML, Mapbox<br><strong>Zone:</strong> Ndama<br>"
+                    },
+                    {
+                        src: "app maps.jpeg",
+                        alt: "GV1 Chemical Campus - Atrium Detail",
+                        title: "Shade analysis",
+                        description: "Processing data from different softwares and compiling them to a single index. Modeling the settlement and running the shade analysis for pedestrians on road, trying to convert them to raster from grasshopper to Qgis GDF.",
+                        details: "<strong>TOOLS:</strong> Grasshopper, Qgis, Ladybug<br><strong>Zone:</strong> Ndama<br>"
+                    },
+                    {
+                        src: "centralndama-ezgif.com-video-to-gif-converter.gif",
+                        alt: "GV1 Chemical Campus - Metal Fin Detail",
+                        title: "Pedestrian simulation",
+                        description: "The project started with understanding how people in the settlement walk around for their daily chores. We used pedsim plugin for our basic research and understanding.",
+                        details: "<strong>TOOLS:</strong> Grasshopper, Qgis, Pedsim<br><strong>Zone:</strong> Ndama<br>"
+                    }
+                ]
+            },
+            2: {
+                title: "Wildfire Vulnerability",
+                note: "Publishing a global dataset that analysis possibilites of fire and places that are more vulnerable.",
+                tools: "Grasshopper, Python, GEE, Planetlabs",
+                images: [
+                    {
+                        src: "website fire.jpg",
+                        alt: "Koya Cube - Parametric Interface",
+                        title: "GEE dataset",
+                        description: "Greatest challenge in publishing global dataset in Google earth was, it doesn't have hospitals and fire stations all over the world so we combined OSM and python to import places to GEE and run analysis for each selected area.",
+                        details: "<strong>TOOLS:</strong> GEE, Js, OSM, python<br><strong>Zone:</strong> Global<br>"
+                    },
+                    {
+                        src: "clipped fire.gif",
+                        alt: "LA wildfire disaster",
+                        title: "LA wildfire disaster",
+                        description: "Through the datset published, we cross checked with major disasters that happened over the years. We checked with LA wild fire and the vulnerablility clips the burnt area as shown in the map proving the robustness of the data computing.",
+                        details: "<strong>TOOLS:</strong> GEE, Js, Roboflow<br><strong>Zone:</strong> Los Angeles<br>"
+                    },
+                    {
+                        src: "deep fire.png",
+                        alt: "Koya Cube - Fabrication Output",
+                        title: "Roboflow - Image segmentation",
+                        description: "Used open source models from Roboflow and also trained few models to detect swimming pools, trees and other tangible objects to fight fire.",
+                        details: "<strong>TOOLS:</strong> GEE, Js, Roboflow<br><strong>Zone:</strong> Los Angeles<br>"
+                    }
+                ]
+            },
+            3: {
+                title: "AI participatory - Open city Poblenou",
+                note: "Creating a design pipeline in N8N and workflow to use AI/LLM/RAG agents in Participatory as a tool.",
+                tools: "N8N, RAG agents, ComfyUI, Python, Js, Roboflow, APIs",
+                images: [
+                    {
+                        src: "training.png",
+                        alt: "Capella School - Generative Planning",
+                        title: "Training comfyui models to sketch",
+                        description: "Using Comfyui, we trained models to sketch as per stakeholders ideas and used RAG agents to analyse these sketches.",
+                        details: "<strong>TOOLS:</strong> ComfyUI, Js, OpenAI vision model, N8N<br><strong>Zone:</strong> Poblenou, Barcelona<br>"
+                    },
+                    {
+                        src: "corr.gif",
+                        alt: "Capella School - Learning Clusters",
+                        title: "Learning Cluster Design",
+                        description: "Through AI vision model, we analysed the sketches to understand the scale and relationship of each idea sketched by stakeholders. Then we plotted a correlation map to visualise the design.",
+                        details: "<strong>TOOLS:</strong> ComfyUI, Js, OpenAI vision model, N8N, Grasshopper<br><strong>Zone:</strong> Poblenou, Barcelona<br>"
+                    },
+                    {
+                        src: "trans.gif",
+                        alt: "Capella School - Community Hub",
+                        title: "Roboflow - Urban morphology",
+                        description: "Through Roboflow, we mapped the number of buildings before 1992 Olympics and after, in order to understand the morphology and change in neighborhood as well as impact of the change.",
+                        details: "<strong>TOOLS:</strong> ComfyUI, Js, Qgis, N8N, Segmentation<br><strong>Zone:</strong> Poblenou, Barcelona<br>"
+                    }
+                ]
+            },
+            4: {
+                title: "Heat Archipelagos",
+                note: "Visualising shapes of heat in city.",
+                tools: "Grasshopper, GEE, Python, Js",
+                images: [
+                    {
+                        src: "1-01.jpg",
+                        alt: "DNL - Climate Response",
+                        title: "Binary data set",
+                        description: "Compiling datas like UHI, LST, Green area, Water surface, Building occupation etc., we created a binary geo-data frame and ran the loop for over 150+ cities.",
+                        details: "<strong>TOOLS:</strong> Python, GEE, API, OSMNX, Js<br><strong>Zone:</strong> Global<br>"
+                    },
+                    {
+                        src: "Model.gif",
+                        alt: "DNL - Material Integration",
+                        title: "Shapes of heat",
+                        description: "We came up with a idea to give volumes to the heat and create shapes to analyse the distribution of heat in each  city.",
+                        details: "<strong>TOOLS:</strong> Python, GEE, API, OSMNX, Js, Grasshopper<br><strong>Zone:</strong> Global<br>"
+                    },
+                    {
+                        src: "ML_animation.gif",
+                        alt: "DNL - Workspace Design",
+                        title: "Machine learning - Clustering shapes",
+                        description: "Using python code in Grasshopper, we clustered the cities based on the heat distribution. This helps us to develop strategies for mitigating heat.",
+                        details: "<strong>TOOLS:</strong> Python, GEE, API, OSMNX, Js<br><strong>Zone:</strong> Global<br>"
+                    }
+                ]
+            }
+        };
+
+        let currentProject = null;
+        let currentImageIndex = 0;
+
+        // Gallery modal elements
+        const galleryModal = document.getElementById('galleryModal');
+        const galleryTitle = document.getElementById('galleryTitle');
+        const galleryMainImage = document.getElementById('galleryMainImage');
+        const galleryThumbnails = document.getElementById('galleryThumbnails');
+        const galleryTextContent = document.getElementById('galleryTextContent');
+        const currentImageSpan = document.getElementById('currentImage');
+        const totalImagesSpan = document.getElementById('totalImages');
+        const closeButton = document.getElementById('closeButton');
+        const prevButton = document.getElementById('prevImage');
+        const nextButton = document.getElementById('nextImage');
+
+        // Scroll Progress Bar
+        function updateScrollProgress() {
+            const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+            const scrollHeight = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+            const scrollProgress = (scrollTop / scrollHeight) * 100;
+            document.getElementById('scrollProgress').style.width = scrollProgress + '%';
+        }
+
+        window.addEventListener('scroll', updateScrollProgress);
+
+        // Intersection Observer for slide animations
+        const observerOptions = {
+            threshold: 0.3,
+            rootMargin: '0px 0px -100px 0px'
+        };
+
+        const slideObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                }
+            });
+        }, observerOptions);
+
+        // Observe all project slides
+        document.querySelectorAll('.project-slide').forEach(slide => {
+            slideObserver.observe(slide);
+        });
+
+        // View Details button functionality
+        document.querySelectorAll('.view-details-btn').forEach(button => {
+            button.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const projectId = button.getAttribute('data-project');
+                openGallery(projectId);
+            });
+        });
+
+        function openGallery(projectId) {
+            currentProject = projectGalleries[projectId];
+            if (!currentProject) return;
+
+            currentImageIndex = 0;
+
+            // Set gallery title
+            galleryTitle.textContent = currentProject.title;
+
+            // Set total images count
+            totalImagesSpan.textContent = currentProject.images.length;
+
+            // Generate thumbnails
+            generateThumbnails();
+
+            // Display first image and text
+            displayImage(0);
+
+            // Show modal
+            galleryModal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function generateThumbnails() {
+            galleryThumbnails.innerHTML = '';
+            currentProject.images.forEach((image, index) => {
+                const thumbnail = document.createElement('img');
+                thumbnail.src = image.src;
+                thumbnail.alt = image.alt;
+                thumbnail.className = 'gallery-thumbnail';
+                if (index === 0) thumbnail.classList.add('active');
+
+                thumbnail.addEventListener('click', () => {
+                    displayImage(index);
+                });
+
+                galleryThumbnails.appendChild(thumbnail);
+            });
+        }
+
+        function displayImage(index) {
+            if (!currentProject || index < 0 || index >= currentProject.images.length) return;
+
+            currentImageIndex = index;
+            const image = currentProject.images[index];
+
+            // Update main image
+            galleryMainImage.src = image.src;
+            galleryMainImage.alt = image.alt;
+
+            // Update counter
+            currentImageSpan.textContent = index + 1;
+
+            // Update active thumbnail
+            document.querySelectorAll('.gallery-thumbnail').forEach((thumb, i) => {
+                thumb.classList.toggle('active', i === index);
+            });
+
+            // Update text content
+            updateTextContent(image);
+        }
+
+        function updateTextContent(image) {
+            galleryTextContent.innerHTML = `
+                <div class="gallery-note">${currentProject.note}</div>
+                <div class="gallery-image-title">${image.title}</div>
+                <div class="gallery-image-description">${image.description}</div>
+                <div class="gallery-image-details">${image.details}</div>
+                <div class="gallery-tools">Tools Used: ${currentProject.tools}</div>
+            `;
+        }
+
+        function nextImage() {
+            const nextIndex = (currentImageIndex + 1) % currentProject.images.length;
+            displayImage(nextIndex);
+        }
+
+        function prevImage() {
+            const prevIndex = currentImageIndex === 0 ? currentProject.images.length - 1 : currentImageIndex - 1;
+            displayImage(prevIndex);
+        }
+
+        function closeGallery() {
+            galleryModal.classList.remove('active');
+            document.body.style.overflow = 'auto';
+            currentProject = null;
+        }
+
+        // Event listeners for gallery navigation
+        nextButton.addEventListener('click', nextImage);
+        prevButton.addEventListener('click', prevImage);
+        closeButton.addEventListener('click', closeGallery);
+
+        // Keyboard navigation
+        document.addEventListener('keydown', (e) => {
+            if (galleryModal.classList.contains('active')) {
+                switch(e.key) {
+                    case 'Escape':
+                        closeGallery();
+                        break;
+                    case 'ArrowRight':
+                        nextImage();
+                        break;
+                    case 'ArrowLeft':
+                        prevImage();
+                        break;
+                }
+            } else {
+                // Original keyboard navigation for page scrolling
+                if (e.key === 'ArrowDown') {
+                    window.scrollBy(0, window.innerHeight * 0.8);
+                } else if (e.key === 'ArrowUp') {
+                    window.scrollBy(0, -window.innerHeight * 0.8);
+                }
+            }
+        });
+
+        // Close on background click
+        galleryModal.addEventListener('click', (e) => {
+            if (e.target === galleryModal) {
+                closeGallery();
+            }
+        });
+
+        // Initialize
+        window.addEventListener('load', () => {
+            updateScrollProgress();
+        });
+    </script>
+</body>
+</html>
