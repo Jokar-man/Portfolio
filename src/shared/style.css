@@ -1,0 +1,159 @@
+:root {
+  --accent-red: #ff6b6b;
+  --accent-teal: #4ecdc4;
+  --bg-black: #000;
+  --bg-panel: rgba(255, 255, 255, 0.05);
+  --border-panel: rgba(255, 255, 255, 0.1);
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html,
+body {
+  background: var(--bg-black);
+  color: #fff;
+  font-family: 'Courier New', monospace;
+  overflow-x: hidden;
+}
+
+a {
+  color: inherit;
+}
+
+/* ---------- Top-left identity header (name + rotating role) ---------- */
+.site-header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 1000;
+  padding: 24px 28px;
+  pointer-events: none;
+}
+
+.site-header .site-name {
+  font-size: 1.4rem;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: #fff;
+  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.7);
+}
+
+.site-header .site-role {
+  margin-top: 4px;
+  font-size: 0.8rem;
+  font-weight: 400;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--accent-red);
+  height: 18px;
+  overflow: hidden;
+  position: relative;
+}
+
+.site-header .site-role .role-slide {
+  display: inline-block;
+  transition: opacity 0.4s ease, transform 0.4s ease;
+}
+
+.site-header .site-role .role-slide.hidden {
+  opacity: 0;
+  transform: translateY(-8px);
+}
+
+/* ---------- Left-edge vertical tab nav ---------- */
+.side-nav {
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  width: 56px;
+  background: rgba(10, 10, 10, 0.55);
+  backdrop-filter: blur(6px);
+  border-right: 1px solid var(--border-panel);
+}
+
+.side-nav-item {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+  text-decoration: none;
+  padding: 22px 0;
+  font-size: 0.85rem;
+  letter-spacing: 3px;
+  font-weight: 400;
+  color: rgba(255, 255, 255, 0.55);
+  text-transform: uppercase;
+  transition: all 0.25s ease;
+  border-left: 2px solid transparent;
+}
+
+.side-nav-item:hover {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.side-nav-item.active {
+  color: #fff;
+  background: rgba(255, 107, 107, 0.18);
+  border-left: 2px solid var(--accent-red);
+  font-weight: 700;
+}
+
+@media (max-width: 600px) {
+  .side-nav {
+    width: 36px;
+  }
+  .side-nav-item {
+    font-size: 0.65rem;
+    letter-spacing: 2px;
+    padding: 14px 0;
+  }
+  .site-header {
+    padding: 16px 16px 16px 48px;
+  }
+  .site-header .site-name {
+    font-size: 1rem;
+  }
+  .site-header .site-role {
+    font-size: 0.65rem;
+  }
+}
+
+/* ---------- Shared page shell ---------- */
+.page-canvas {
+  position: fixed;
+  inset: 0;
+  display: block;
+  z-index: 1;
+}
+
+.page-content {
+  position: relative;
+  z-index: 2;
+  margin-left: 56px;
+}
+
+@media (max-width: 600px) {
+  .page-content {
+    margin-left: 36px;
+  }
+}
+
+/* ---------- Reusable panel look ---------- */
+.panel {
+  background: var(--bg-panel);
+  border: 1px solid var(--border-panel);
+  border-radius: 14px;
+  backdrop-filter: blur(8px);
+}

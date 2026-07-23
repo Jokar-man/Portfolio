@@ -1,0 +1,91 @@
+[
+  {
+    "id": "ai-participatory-poblenou",
+    "title": "AI Participatory - Open City Poblenou",
+    "lat": 41.3874,
+    "lon": 2.1686,
+    "year": "2025",
+    "location": "Barcelona, Spain",
+    "description": "Academic work exploring participatory design using n8n, ComfyUI and vision-language models. Trained models to sketch like humans and used GPT-4o + Roboflow vision models to power an AI-assisted participatory design process.",
+    "image": "Urban Computation/Open city cover.jpg",
+    "placeholder": true
+  },
+  {
+    "id": "heat-archipelagos",
+    "title": "Heat Archipelagos",
+    "lat": 15.0,
+    "lon": 10.0,
+    "year": "2023",
+    "location": "Global",
+    "description": "Academic work at IAAC studying urban heat across 105 cities, clustering them into an 'archipelago' model via unsupervised machine learning, built with Grasshopper, Google Earth Engine and Python.",
+    "image": "Urban Computation/Heat_archipelagos.jpg",
+    "placeholder": true,
+    "locationNote": "Approximate — project scope is global, replace with a real anchor point"
+  },
+  {
+    "id": "rundu-mobility-justice",
+    "title": "Rundu Mobility Justice Framework",
+    "lat": -17.933,
+    "lon": 19.766,
+    "year": "2025",
+    "location": "Rundu, Namibia",
+    "description": "Studies urban vulnerability and injustice in Ndama, a small settlement in Rundu, through the lens of mobility. Built a website compiling collected data and used NLP/LLM-weighted GNN clustering of stakeholder input for urban planners and government officials.",
+    "image": "Urban Computation/Rundu web.gif",
+    "placeholder": true
+  },
+  {
+    "id": "wildfire-vulnerability",
+    "title": "Wildfire Vulnerability",
+    "lat": 34.0522,
+    "lon": -118.2437,
+    "year": "2025",
+    "location": "Los Angeles / Global",
+    "description": "A forensic approach to spatial wildfire data using Roboflow and Google Earth Engine. Published a global GEE dataset correlating NDVI-NDMI over six months and mapping fire stations/hospitals able to respond to an outbreak.",
+    "image": "Urban Computation/LA fire cover.png",
+    "placeholder": true
+  },
+  {
+    "id": "gv1-chemical-campus",
+    "title": "GV1 Chemical Campus",
+    "lat": 17.385,
+    "lon": 78.4867,
+    "year": "2022",
+    "location": "Hyderabad, India",
+    "description": "A chemical campus constructed between metal fins, creating the impression that the building is held together by metal membranes. The atrium detailing features a continuous glass frame transitioning seamlessly from facade to roof structure.",
+    "image": "Architecture/GV1 render.jpg",
+    "placeholder": true
+  },
+  {
+    "id": "koya-cube",
+    "title": "Koya Cube",
+    "lat": 48.1225,
+    "lon": 11.2903,
+    "year": "2024",
+    "location": "Gilching, Germany",
+    "description": "Freelance project for a fabrication company in Germany. A Grasshopper + Python script generates a parametric module from user-input sizes, uploads it to ShapeDiver for visualization, then outputs fabrication codes and sizes.",
+    "image": "Architecture/Koya 2.jpg",
+    "placeholder": true
+  },
+  {
+    "id": "capella-school-district",
+    "title": "Capella School District",
+    "lat": 17.42,
+    "lon": 78.5,
+    "year": "2023",
+    "location": "Hyderabad, India",
+    "description": "A master plan for a hybrid school district, staged using generative site planning with the Termite nest plugin for Grasshopper and basic algorithmic computation.",
+    "image": "Architecture/Capella render.jpg",
+    "placeholder": true
+  },
+  {
+    "id": "dnl-corporate-campus",
+    "title": "DNL",
+    "lat": 23.0225,
+    "lon": 72.5714,
+    "year": "2023",
+    "location": "Ahmedabad, India",
+    "description": "A corporate campus articulated with large volumes and intricate detailing, blending materials and local climate response.",
+    "image": "Architecture/DNL.jpg",
+    "placeholder": true
+  }
+]
