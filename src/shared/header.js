@@ -10,13 +10,12 @@ const ROLES = [
 
 const NAV_ITEMS = [
   { id: 'profile', label: 'Profile', href: 'profile.html' },
-  { id: 'visualize', label: 'Visualize', href: 'visualize.html' },
   { id: 'projects', label: 'Projects', href: 'index.html' },
 ];
 
 /**
  * Injects the shared identity header (name + rotating role) and the
- * left-edge vertical tab nav. `activePage` is one of 'profile' | 'visualize' | 'projects'.
+ * left-edge vertical tab nav. `activePage` is one of 'profile' | 'projects'.
  */
 export function initHeader(activePage) {
   const header = document.createElement('header');

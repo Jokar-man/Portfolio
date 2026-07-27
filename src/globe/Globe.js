@@ -11,7 +11,9 @@ import {
   dollyToMarker,
   dollyToMap,
 } from './MapTransition.js';
-import { createHoverPopup, createDetailPanel } from './ProjectCard.js';
+import { createMarkerChip, createDetailPanel } from './ProjectCard.js';
+import { NetworkOverlay } from './NetworkOverlay.js';
+import { animate } from '../shared/utils/tween.js';
 
 const SPHERE_RADIUS = 2;
 const MAP_HALF_WIDTH = 4;
@@ -41,7 +43,7 @@ function buildPointCloud(rows) {
     flatPos[i * 3 + 2] = f.z;
 
     const hue = hashToUnit(iso3);
-    color.setHSL(0.98 + hue * 0.04, 0.55 + hue * 0.25, 0.32 + hue * 0.3);
+    color.setHSL(0.98 + hue * 0.04, 0.4 + hue * 0.18, 0.42 + hue * 0.26);
     colors[i * 3] = color.r;
     colors[i * 3 + 1] = color.g;
     colors[i * 3 + 2] = color.b;
@@ -60,14 +62,15 @@ export class Globe {
   constructor(container, projects) {
     this.container = container;
     this.projects = projects;
-    this.state = 'globe'; // 'globe' | 'transitioning' | 'map' | 'detail'
+    this.state = 'map'; // 'map' | 'transitioning' | 'detail' | 'network'
     this.activeProject = null;
     this.cancelFns = [];
+    this.clock = new THREE.Clock();
 
     this._initScene();
     this._initMarkers();
     this._initDom();
-    this._initInteraction();
+    this._initWheelForwarding();
     this._loadPoints();
 
     this._onResize = this._onResize.bind(this);
@@ -92,46 +95,65 @@ export class Globe {
 
     this.scene = new THREE.Scene();
 
+    // Holds the point cloud + markers. Rotation stays at 0 during the map/detail
+    // flow (OrbitControls orbits the CAMERA instead) — only network-visualize mode
+    // spins this group directly, with a static camera, so on-screen anchor positions
+    // stay fixed while the globe turns underneath.
+    this.rotationGroup = new THREE.Group();
+    this.scene.add(this.rotationGroup);
+
     this.camera = new THREE.PerspectiveCamera(
       45,
       window.innerWidth / window.innerHeight,
       0.1,
       100
     );
+    // Fixed camera position used only while in 'network' mode, where the globe
+    // itself spins (via rotationGroup) instead of the camera orbiting it.
     this.globeCameraPos = new THREE.Vector3(0, 0, SPHERE_RADIUS * 3.2);
-    this.camera.position.copy(this.globeCameraPos);
 
     this.mapCameraPos = new THREE.Vector3(
       0,
       0,
       fitDistance(this.camera, MAP_HALF_WIDTH, MAP_HALF_HEIGHT)
     );
+    // The site opens directly on the flat map — no standalone rotating-globe view.
+    this.camera.position.copy(this.mapCameraPos);
 
     this.controls = new OrbitControls(this.camera, canvas);
     this.controls.enableDamping = true;
     this.controls.dampingFactor = 0.08;
-    this.controls.autoRotate = true;
-    this.controls.autoRotateSpeed = 0.6;
-    this.controls.minDistance = SPHERE_RADIUS * 1.6;
-    this.controls.maxDistance = SPHERE_RADIUS * 6;
-    this.controls.minPolarAngle = Math.PI / 2 - 0.6;
-    this.controls.maxPolarAngle = Math.PI / 2 + 0.6;
+    this.controls.screenSpacePanning = true;
+    this._setMapControlsEnabled(true);
 
+    // Scaled by pixelRatio since gl_PointSize is authored in framebuffer (not CSS) pixels —
+    // without this the dots would render smaller than intended on high-DPI screens.
     this.uniforms = {
-      uMorph: { value: 0 },
-      uPointSize: { value: 2.2 },
+      uMorph: { value: 1 },
+      uPointSize: { value: 2.2 * this.renderer.getPixelRatio() },
     };
+  }
 
-    this.clickTarget = new THREE.Mesh(
-      new THREE.SphereGeometry(SPHERE_RADIUS, 32, 32),
-      new THREE.MeshBasicMaterial({ transparent: true, opacity: 0, depthWrite: false })
-    );
-    this.scene.add(this.clickTarget);
+  /** Map state: no orbit rotation, but free pan + zoom over the flat map. */
+  _setMapControlsEnabled(enabled) {
+    this.controls.enabled = enabled;
+    if (!enabled) return;
+    this.controls.enableRotate = false;
+    this.controls.enablePan = true;
+    this.controls.enableZoom = true;
+    this.controls.autoRotate = false;
+    this.controls.minDistance = this.mapCameraPos.z * 0.2;
+    this.controls.maxDistance = this.mapCameraPos.z * 1.8;
+    // Without this, left-drag still tries to ROTATE (its default binding) and does
+    // nothing since enableRotate is false — pan only fires on right-drag by default.
+    // Remap left-drag (and single-finger touch) to PAN so it behaves like a normal map.
+    this.controls.mouseButtons.LEFT = THREE.MOUSE.PAN;
+    this.controls.touches.ONE = THREE.TOUCH.PAN;
   }
 
   _initMarkers() {
     this.markersGroup = new THREE.Group();
-    this.scene.add(this.markersGroup);
+    this.rotationGroup.add(this.markersGroup);
     this.markerMeshes = [];
 
     const geometry = new THREE.SphereGeometry(0.045, 14, 14);
@@ -155,32 +177,71 @@ export class Globe {
       );
       flatPos.z = MARKER_FLAT_Z;
 
-      mesh.userData = { project, spherePos, flatPos };
-      mesh.position.copy(spherePos);
+      // The chip is a real DOM button (positioned via screen-projection each frame in
+      // _tick), not a raycast target — it can't be swallowed by OrbitControls' pointer
+      // handling on the canvas the way a 3D-mesh click could.
+      const chip = createMarkerChip(project, () => this._selectMarker(mesh.userData));
+
+      mesh.userData = { project, spherePos, flatPos, chip };
+      mesh.position.copy(flatPos);
       this.markersGroup.add(mesh);
       this.markerMeshes.push(mesh);
     });
   }
 
   _initDom() {
-    this.hint = document.createElement('button');
-    this.hint.className = 'globe-hint';
-    this.hint.textContent = 'Enter Map View';
-    document.body.appendChild(this.hint);
+    this.bottomBar = document.createElement('div');
+    this.bottomBar.className = 'globe-bottom-bar';
+    document.body.appendChild(this.bottomBar);
 
     this.backBtn = document.createElement('button');
     this.backBtn.className = 'globe-back';
-    this.backBtn.textContent = '← Back';
-    document.body.appendChild(this.backBtn);
+    this.backBtn.textContent = '← Back to Map';
+    this.bottomBar.appendChild(this.backBtn);
 
-    this.popup = createHoverPopup();
+    this.visualizeBtn = document.createElement('button');
+    this.visualizeBtn.className = 'globe-visualize visible';
+    this.visualizeBtn.textContent = 'Visualize ✦';
+    this.bottomBar.appendChild(this.visualizeBtn);
+
     this.detail = createDetailPanel({ onClose: () => this._closeDetail() });
 
-    this.hint.addEventListener('click', () => this._enterMap());
+    this.visualizeBtn.addEventListener('click', () => this._enterNetwork());
     this.backBtn.addEventListener('click', () => {
       if (this.state === 'detail') this._closeDetail();
-      else if (this.state === 'map') this._backToGlobe();
+      else if (this.state === 'network') this._exitNetwork();
     });
+  }
+
+  /**
+   * OrbitControls' wheel-zoom listener is bound to the canvas element specifically.
+   * With 17 project chips covering much of the map, the cursor is very often over a
+   * chip (a separate, higher z-index DOM element) rather than bare canvas when the
+   * user scrolls — so the wheel event never reaches OrbitControls and zoom appears
+   * dead. Forward it manually in that case.
+   */
+  _initWheelForwarding() {
+    document.addEventListener(
+      'wheel',
+      (e) => {
+        if (this.state !== 'map') return;
+        if (!e.target.closest?.('.marker-chip')) return;
+        e.preventDefault();
+        this.canvas.dispatchEvent(
+          new WheelEvent('wheel', {
+            deltaX: e.deltaX,
+            deltaY: e.deltaY,
+            deltaZ: e.deltaZ,
+            deltaMode: e.deltaMode,
+            clientX: e.clientX,
+            clientY: e.clientY,
+            bubbles: true,
+            cancelable: true,
+          })
+        );
+      },
+      { passive: false }
+    );
   }
 
   async _loadPoints() {
@@ -196,69 +257,112 @@ export class Globe {
 
     this.points = new THREE.Points(geometry, material);
     this.points.frustumCulled = false;
-    this.scene.add(this.points);
+    this.rotationGroup.add(this.points);
   }
 
-  _initInteraction() {
-    this.raycaster = new THREE.Raycaster();
-    this.raycaster.params.Points = { threshold: 0.05 };
-    this.pointer = new THREE.Vector2();
+  /**
+   * Projects every marker to screen space, then resolves overlaps by stacking
+   * chips upward — without this, geographically close projects (e.g. several in
+   * the same city) render exactly on top of each other and all but the last one
+   * become invisible/unclickable.
+   */
+  _updateMarkerChips() {
+    const rect = this.canvas.getBoundingClientRect();
+    const showChips = this.state === 'map';
 
-    this.canvas = this.container.querySelector('.globe-canvas');
-
-    this.container.addEventListener('pointermove', (e) => this._onPointerMove(e));
-    this.container.addEventListener('click', (e) => this._onClick(e));
-  }
-
-  _setPointer(e) {
-    const rect = this.container.getBoundingClientRect();
-    this.pointer.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
-    this.pointer.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
-  }
-
-  _onPointerMove(e) {
-    if (this.state !== 'map') {
-      this.popup.hide();
-      this.canvas.style.cursor = this.state === 'globe' ? '' : 'default';
-      return;
-    }
-    this._setPointer(e);
-    this.raycaster.setFromCamera(this.pointer, this.camera);
-    const hits = this.raycaster.intersectObjects(this.markerMeshes);
-    if (hits.length) {
-      const { project } = hits[0].object.userData;
-      this.popup.show(project, e.clientX, e.clientY);
-      this.canvas.style.cursor = 'pointer';
-    } else {
-      this.popup.hide();
-      this.canvas.style.cursor = 'default';
-    }
-  }
-
-  _onClick(e) {
-    if (this.state === 'globe') {
-      this._setPointer(e);
-      this.raycaster.setFromCamera(this.pointer, this.camera);
-      if (this.raycaster.intersectObject(this.clickTarget).length) {
-        this._enterMap();
-      }
+    if (!showChips) {
+      this.markerMeshes.forEach((mesh) => mesh.userData.chip.setVisible(false));
       return;
     }
 
-    if (this.state === 'map') {
-      this._setPointer(e);
-      this.raycaster.setFromCamera(this.pointer, this.camera);
-      const hits = this.raycaster.intersectObjects(this.markerMeshes);
-      if (hits.length) {
-        this._selectMarker(hits[0].object.userData);
+    const CHIP_W = 190;
+    const CHIP_H = 54;
+    const GAP = 6;
+
+    const raw = this.markerMeshes.map((mesh) => {
+      const ndc = mesh.position.clone().project(this.camera);
+      return {
+        mesh,
+        x: rect.left + (ndc.x * 0.5 + 0.5) * rect.width,
+        y: rect.top + (-ndc.y * 0.5 + 0.5) * rect.height,
+      };
+    });
+    raw.sort((a, b) => a.x - b.x);
+
+    const placed = [];
+    raw.forEach(({ mesh, x, y }) => {
+      // Search offsets alternating up/down from the natural position (0, -1, +1, -2, +2, ...)
+      // so a tight cluster fans out around its real location instead of marching
+      // straight off the top of the screen.
+      let offset = 0;
+      for (let guard = 0; guard < 20; guard++) {
+        const step = Math.ceil(guard / 2);
+        const candidate = guard % 2 === 0 ? -step : step;
+        const testOffset = candidate * (CHIP_H + GAP);
+        const top = y - CHIP_H * 1.3 - testOffset;
+        const bottom = top + CHIP_H;
+        const left = x - CHIP_W / 2;
+        const right = x + CHIP_W / 2;
+        const collides = placed.some(
+          (p) => !(right < p.left || left > p.right || bottom < p.top - GAP || top > p.bottom + GAP)
+        );
+        if (!collides) {
+          offset = testOffset;
+          break;
+        }
       }
-    }
+      const top = y - CHIP_H * 1.3 - offset;
+      placed.push({ left: x - CHIP_W / 2, right: x + CHIP_W / 2, top, bottom: top + CHIP_H });
+
+      mesh.userData.chip.setVisible(true);
+      mesh.userData.chip.setPosition(x, y - offset);
+    });
   }
 
-  _enterMap() {
-    if (this.state !== 'globe') return;
+  _enterNetwork() {
+    if (this.state !== 'map') return;
     this.state = 'transitioning';
-    this.hint.classList.add('hidden');
+    this.controls.enabled = false;
+    this.backBtn.classList.remove('visible');
+    this.visualizeBtn.classList.remove('visible');
+
+    if (!this.networkOverlay) {
+      this.networkOverlay = new NetworkOverlay({
+        renderer: this.renderer,
+        scene: this.scene,
+        camera: this.camera,
+        rotationGroup: this.rotationGroup,
+        markerMeshes: this.markerMeshes,
+        globeRadius: SPHERE_RADIUS,
+      });
+    }
+
+    transitionToGlobe({
+      camera: this.camera,
+      controls: this.controls,
+      uniforms: this.uniforms,
+      globeCameraPos: this.globeCameraPos,
+      onComplete: () => {
+        this.controls.enabled = false;
+        this.state = 'network';
+        this.networkOverlay.enter();
+        this.backBtn.classList.add('visible');
+        this.backBtn.textContent = '← Back to Map';
+      },
+    });
+  }
+
+  _exitNetwork() {
+    if (this.state !== 'network') return;
+    this.state = 'transitioning';
+    this.backBtn.classList.remove('visible');
+    this.networkOverlay.exit();
+
+    const startRotationY = this.rotationGroup.rotation.y;
+    animate(1600, (t) => {
+      this.rotationGroup.rotation.y = startRotationY * (1 - t);
+    });
+
     transitionToMap({
       camera: this.camera,
       controls: this.controls,
@@ -266,25 +370,8 @@ export class Globe {
       mapCameraPos: this.mapCameraPos,
       onComplete: () => {
         this.state = 'map';
-        this.backBtn.classList.add('visible');
-        this.backBtn.textContent = '← Back to Globe';
-      },
-    });
-  }
-
-  _backToGlobe() {
-    if (this.state !== 'map') return;
-    this.state = 'transitioning';
-    this.backBtn.classList.remove('visible');
-    this.popup.hide();
-    transitionToGlobe({
-      camera: this.camera,
-      controls: this.controls,
-      uniforms: this.uniforms,
-      globeCameraPos: this.globeCameraPos,
-      onComplete: () => {
-        this.state = 'globe';
-        this.hint.classList.remove('hidden');
+        this._setMapControlsEnabled(true);
+        this.visualizeBtn.classList.add('visible');
       },
     });
   }
@@ -292,9 +379,10 @@ export class Globe {
   _selectMarker({ project, flatPos }) {
     if (this.state !== 'map') return;
     this.state = 'transitioning';
+    this.controls.enabled = false;
     this.activeProject = project;
-    this.popup.hide();
     this.backBtn.classList.remove('visible');
+    this.visualizeBtn.classList.remove('visible');
     dollyToMarker({
       camera: this.camera,
       flatPos,
@@ -317,8 +405,8 @@ export class Globe {
       mapCameraPos: this.mapCameraPos,
       onComplete: () => {
         this.state = 'map';
-        this.backBtn.classList.add('visible');
-        this.backBtn.textContent = '← Back to Globe';
+        this._setMapControlsEnabled(true);
+        this.visualizeBtn.classList.add('visible');
       },
     });
   }
@@ -330,12 +418,14 @@ export class Globe {
     this.camera.updateProjectionMatrix();
     this.mapCameraPos.z = fitDistance(this.camera, MAP_HALF_WIDTH, MAP_HALF_HEIGHT);
     this.renderer.setSize(w, h);
+    this.networkOverlay?.handleResize();
   }
 
   _tick() {
     this._rafId = requestAnimationFrame(this._tick);
+    const dt = Math.min(this.clock.getDelta(), 0.05);
 
-    if (this.state === 'globe') {
+    if (this.state === 'map') {
       this.controls.update();
     }
 
@@ -344,18 +434,25 @@ export class Globe {
       mesh.position.lerpVectors(mesh.userData.spherePos, mesh.userData.flatPos, morph);
     });
 
-    this.renderer.render(this.scene, this.camera);
+    if (this.state === 'network') {
+      this.networkOverlay.tick(dt);
+    } else {
+      this._updateMarkerChips();
+      this.renderer.render(this.scene, this.camera);
+    }
   }
 
   dispose() {
     cancelAnimationFrame(this._rafId);
     window.removeEventListener('resize', this._onResize);
     this.controls.dispose();
+    this.networkOverlay?.dispose();
     this.points?.geometry.dispose();
     this.points?.material.dispose();
-    this.clickTarget.geometry.dispose();
-    this.clickTarget.material.dispose();
-    this.markerMeshes.forEach((m) => m.material.dispose());
+    this.markerMeshes.forEach((m) => {
+      m.material.dispose();
+      m.userData.chip.destroy();
+    });
     this.renderer.dispose();
   }
 }

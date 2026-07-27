@@ -8,7 +8,9 @@ export function latLonToSphere(lat, lon, radius, target) {
   return target;
 }
 
-/** Converts lat/lon (degrees) to an equirectangular XY position spanning +/- halfWidth/halfHeight. */
+/** Converts lat/lon (degrees) to an equirectangular XY position spanning +/- halfWidth/halfHeight.
+ *  Matches the sphere conversion's handedness (Americas negative-lon => left) so the globe<->map
+ *  morph doesn't cross points over each other mid-transition. */
 export function latLonToEquirect(lat, lon, halfWidth, halfHeight, target) {
   target.x = (lon / 180) * halfWidth;
   target.y = (lat / 90) * halfHeight;
