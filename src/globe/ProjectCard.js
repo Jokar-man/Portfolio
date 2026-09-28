@@ -66,6 +66,12 @@ export function createMarkerChip(project, onSelect) {
   return { el, setPosition, setVisible, destroy };
 }
 
+const NARRATIVE_SECTIONS = [
+  { field: 'problem', heading: 'Operational Challenge & Scale' },
+  { field: 'architecture', heading: 'System Architecture & Engineering' },
+  { field: 'impact', heading: 'Deployment & Business Impact' },
+];
+
 export function createDetailPanel({ onClose } = {}) {
   const el = document.createElement('div');
   el.className = 'project-detail';
@@ -76,7 +82,9 @@ export function createDetailPanel({ onClose } = {}) {
       <div class="project-detail-title"></div>
       <div class="project-detail-meta"></div>
       <div class="project-detail-tags"></div>
-      <p class="project-detail-description"></p>
+      <div class="project-detail-metrics"></div>
+      <div class="project-detail-narrative"></div>
+      <div class="project-detail-tech"></div>
     </div>
   `;
   document.body.appendChild(el);
@@ -100,7 +108,48 @@ export function createDetailPanel({ onClose } = {}) {
       tagsEl.appendChild(tag);
     });
 
-    el.querySelector('.project-detail-description').textContent = project.description;
+    const metricsEl = el.querySelector('.project-detail-metrics');
+    metricsEl.innerHTML = '';
+    (project.metrics || []).forEach((metric) => {
+      const box = document.createElement('div');
+      box.className = 'project-detail-metric';
+      box.innerHTML = `
+        <div class="project-detail-metric-value"></div>
+        <div class="project-detail-metric-label"></div>
+      `;
+      box.querySelector('.project-detail-metric-value').textContent = metric.value;
+      box.querySelector('.project-detail-metric-label').textContent = metric.label;
+      metricsEl.appendChild(box);
+    });
+
+    const narrativeEl = el.querySelector('.project-detail-narrative');
+    narrativeEl.innerHTML = '';
+    NARRATIVE_SECTIONS.forEach(({ field, heading }) => {
+      const text = project[field] || (field === 'problem' ? project.description : null);
+      if (!text) return;
+      const section = document.createElement('div');
+      section.className = 'project-detail-narrative-section';
+      section.innerHTML = `
+        <div class="project-detail-subhead"></div>
+        <p class="project-detail-narrative-text"></p>
+      `;
+      section.querySelector('.project-detail-subhead').textContent = heading;
+      section.querySelector('.project-detail-narrative-text').textContent = text;
+      narrativeEl.appendChild(section);
+    });
+
+    const techEl = el.querySelector('.project-detail-tech');
+    techEl.innerHTML = '';
+    if ((project.tools || []).length) {
+      techEl.innerHTML = '<div class="project-detail-tech-pills"></div>';
+      const pillsEl = techEl.querySelector('.project-detail-tech-pills');
+      project.tools.forEach((tool) => {
+        const pill = document.createElement('span');
+        pill.className = 'tech-pill';
+        pill.textContent = tool;
+        pillsEl.appendChild(pill);
+      });
+    }
 
     const slot = el.querySelector('.project-detail-image-slot');
     slot.innerHTML = '';

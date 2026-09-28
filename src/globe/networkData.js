@@ -21,35 +21,24 @@ const CATEGORY_TO_TOPIC_ID = {
   Urbanism: 'architecture', // fold the one non-standard tag (IUDI) into its closest official topic
 };
 
-// Placeholder — there's no per-project tool tagging yet, so links below are inferred
-// from each project's categories as a reasonable starting point. Replace `inferToolIds`
-// with real per-project tool lists once that data exists.
-export const tools = [
-  { id: 'python', label: 'Python' },
-  { id: 'rhino-gh', label: 'Rhino / Grasshopper' },
-  { id: 'gis', label: 'QGIS / ArcGIS' },
-  { id: 'gee', label: 'Google Earth Engine' },
-  { id: 'ai-agents', label: 'N8N / RAG Agents' },
-  { id: 'three-d3', label: 'Three.js / D3.js' },
-  { id: 'data-tools', label: 'Pandas / Scikit-learn' },
-];
-
-function inferToolIds(project) {
-  const cats = new Set(project.categories || []);
-  const ids = new Set();
-  if (cats.has('Geospatial Research')) {
-    ids.add('gis');
-    ids.add('gee');
-  }
-  if (cats.has('AI for Built Environment') || cats.has('Connections')) ids.add('ai-agents');
-  if (cats.has('Design Engineering') || cats.has('Architecture')) ids.add('rhino-gh');
-  if (cats.has('Software') || cats.has('Urban Computation')) {
-    ids.add('python');
-    ids.add('data-tools');
-  }
-  if (cats.has('Software')) ids.add('three-d3');
-  return [...ids];
+function slugify(label) {
+  return label
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/(^-|-$)/g, '');
 }
+
+// Tool anchors are derived directly from each project's real `tools` list — no
+// heuristic inference. The id is a slug of the label so every project referencing
+// the same tool string links to the same anchor.
+const toolLabelToId = new Map();
+projects.forEach((project) => {
+  (project.tools || []).forEach((label) => {
+    if (!toolLabelToId.has(label)) toolLabelToId.set(label, slugify(label));
+  });
+});
+
+export const tools = [...toolLabelToId.entries()].map(([label, id]) => ({ id, label }));
 
 export const links = [];
 projects.forEach((project) => {
@@ -57,7 +46,8 @@ projects.forEach((project) => {
     const topicId = CATEGORY_TO_TOPIC_ID[category];
     if (topicId) links.push({ source: topicId, project: project.id, weight: 2 });
   });
-  inferToolIds(project).forEach((toolId) => {
+  (project.tools || []).forEach((label) => {
+    const toolId = toolLabelToId.get(label);
     links.push({ source: toolId, project: project.id, weight: 1 });
   });
 });

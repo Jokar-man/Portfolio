@@ -1,11 +1,11 @@
 import './style.css';
 
 const ROLES = [
-  'Architect',
-  'Urban Computational Engineer',
-  'Applied AI researcher',
-  'Geospatial analyst',
-  'Data driven urban planner',
+  'Spatial AI Engineer',
+  'Geospatial Data Engineer',
+  'Urban Digital Twin Specialist',
+  'Applied AI Researcher',
+  'Cloud Spatial Systems Modeler',
 ];
 
 const NAV_ITEMS = [

@@ -214,10 +214,74 @@
   color: rgba(255, 255, 255, 0.85);
 }
 
-.project-detail-description {
+.project-detail-metrics {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 8px;
+  margin-bottom: 22px;
+  background: rgba(255, 255, 255, 0.03);
+  padding: 12px;
+  border-radius: 6px;
+  border: 1px solid var(--border-panel);
+}
+
+.project-detail-metric {
+  text-align: center;
+}
+
+.project-detail-metric-value {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--accent-red);
+}
+
+.project-detail-metric-label {
+  font-size: 0.65rem;
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.55);
+  margin-top: 3px;
+}
+
+.project-detail-narrative-section {
+  margin-bottom: 18px;
+}
+
+.project-detail-subhead {
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  color: var(--accent-teal);
+  margin-bottom: 5px;
+}
+
+.project-detail-narrative-text {
   font-size: 1rem;
   line-height: 1.7;
   color: rgba(255, 255, 255, 0.9);
+}
+
+.project-detail-tech {
+  margin-top: 12px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border-panel);
+}
+
+.project-detail-tech-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.tech-pill {
+  font-size: 0.7rem;
+  letter-spacing: 0.2px;
+  background: rgba(78, 205, 196, 0.12);
+  color: var(--accent-teal);
+  border: 1px solid rgba(78, 205, 196, 0.3);
+  padding: 4px 10px;
+  border-radius: 4px;
 }
 
 .project-detail-close {
